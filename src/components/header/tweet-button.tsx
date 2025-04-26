@@ -10,6 +10,10 @@ export default function TweetButton() {
     document.querySelector('dialog#tweet-form-dialog')!.showModal();
   }
 
+  function handleClose() {
+    document.querySelector('dialog#tweet-form-dialog')!.close();
+  }
+
   return (
     <div>
       <button
@@ -22,6 +26,14 @@ export default function TweetButton() {
       </button>
       <dialog id="tweet-form-dialog" className="modal">
         <div className="modal-box">
+          <button
+            className="btn btn-ghost btn-circle mb-2"
+            onClick={handleClose}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+            </svg>
+          </button>
           <TweetForm />
         </div>
       </dialog>
