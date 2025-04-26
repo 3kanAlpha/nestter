@@ -9,7 +9,7 @@ export default function TweetText({ textContent }: Props) {
     // URL検出
     if (/^https?:\/\/[\w/:%#\$&\?\(\)~\.=\+\-]+$/.test(part)) {
       return (
-        <a key={i} href={part} className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer">
+        <a key={i} href={part} className="text-blue-500 hover:underline wrap-anywhere" target="_blank" rel="noopener noreferrer">
           {part}
         </a>
       );
@@ -19,7 +19,7 @@ export default function TweetText({ textContent }: Props) {
       const username = part.slice(1); // @を取る
       return (
         <Link key={i} href={`/user/${username}`}>
-          <span className="text-blue-500 hover:underline">{part}</span>
+          <span className="text-blue-500 hover:underline wrap-anywhere">{part}</span>
         </Link>
       );
     }
