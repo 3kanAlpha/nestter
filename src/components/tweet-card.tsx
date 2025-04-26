@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import UserAvatar from "./header/user-avatar";
+import TweetText from "./tweet/tweet-text";
 import { defaultAvatarUrl } from '@/consts/account';
 import type { SelectTweet } from "@/db/schema";
 
@@ -52,7 +53,9 @@ export default function TweetCard({ tweet, user, isRetweet = false }: Props) {
             </p>
           </div>
           <div className="mb-4 grow">
-            <p className="whitespace-pre-wrap">{ tweet.textContent }</p>
+            <p className="whitespace-pre-wrap">
+              <TweetText textContent={tweet.textContent} />
+            </p>
           </div>
           <div className="flex flex-row justify-around w-[90%] text-gray-500">
             <div>

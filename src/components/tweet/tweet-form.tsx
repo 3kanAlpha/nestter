@@ -1,30 +1,36 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { insertTweet } from "@/app/action/tweet";
 
 export default function TweetForm() {
   const [state, action, pending] = useActionState(insertTweet, undefined);
+  const [content, setContent] = useState('');
 
   return (
     <div>
       { JSON.stringify(state) && null }
       <form action={action} className="w-full">
         <textarea
+          id="tweet-text-content"
           name="textContent"
-          className="textarea textarea-lg validator w-full h-36"
+          value={content}
+          className="textarea textarea-lg w-full h-36"
           placeholder="今なにしてる？"
           required
           maxLength={280}
           autoFocus
+          onChange={(e)=>setContent(e.target.value)}
         ></textarea>
-        <p className="validator-hint">ツイートの内容は空でない、かつ280文字以下である必要があります</p>
         { state?.status === "error" && (
-          <p>ツイートの投稿に失敗しました（{ state.message }）</p>
+          <p className="text-sm text-error mt-2">ツイートの投稿に失敗しました：<br />{ state.message }</p>
         ) }
 
-        <div className="w-full flex flex-row mt-2">
-          <button className="btn btn-primary ml-auto" type="submit" disabled={pending}>
+        <div className="w-full flex flex-row justify-end items-center gap-4 mt-4">
+          <div>
+            <p className="text-gray-500">{content.length} / 280</p>
+          </div>
+          <button className="btn btn-primary" type="submit" disabled={pending}>
             { pending ? <LoadingContent /> : "Tweet"}
           </button>
         </div>
