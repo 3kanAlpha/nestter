@@ -55,6 +55,8 @@ export const users = pgTable("users", {
 	screenName: text(),
 	displayName: text(),
 	avatarUrl: text(),
+	website: text(),
+	location: text(),
 }, (table) => [
 	unique("users_screen_name_key").on(table.screenName),
 	check("display_name_max_length", sql`length("displayName") <= 50`),

@@ -15,6 +15,8 @@ declare module "next-auth" {
       screenName?: string
       displayName?: string
       avatarUrl?: string
+      website?: string
+      location?: string
     } & DefaultSession["user"]
   }
 }

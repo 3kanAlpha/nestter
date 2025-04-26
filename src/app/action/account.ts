@@ -78,6 +78,8 @@ async function _getUserByScreenName(screenName: string) {
     displayName: users.displayName,
     avatarUrl: users.avatarUrl,
     bio: users.bio,
+    website: users.website,
+    location: users.location,
   }).from(users).where(eq(users.screenName, screenName)).limit(1);
   return res.length > 0 ? res[0] : null;
 }
