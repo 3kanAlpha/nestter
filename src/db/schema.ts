@@ -105,3 +105,8 @@ export const follows = pgTable("follows", {
 	primaryKey({ columns: [table.followerId, table.followeeId], name: "follows_pkey"}),
 	check("follows_check", sql`follower_id <> followee_id`),
 ]);
+
+export type SelectTweet = typeof tweets.$inferSelect;
+export type InsertTweet = typeof tweets.$inferInsert;
+
+export type SelectUser = typeof users.$inferSelect;

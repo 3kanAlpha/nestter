@@ -1,11 +1,11 @@
 @import "tailwindcss";
 @plugin "daisyui" {
-  exclude: rootcolor;
+  themes: light --default, dark --prefersdark, dracula;
 }
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-tw-header: #243447;
+  --color-tw-body: #1b2836;
 }
 
 @theme inline {
@@ -15,15 +15,6 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
-  background: var(--background);
-  color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }

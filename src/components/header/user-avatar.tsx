@@ -6,6 +6,8 @@ type Props = {
 }
 
 export default function UserAvatar({ src }: Props) {
+  const imageSize = 64;
+
   function imageLoader({ src }: ImageLoaderProps) {
     return src;
   }
@@ -15,8 +17,8 @@ export default function UserAvatar({ src }: Props) {
       alt={`Avatar of user`}
       src={src}
       loader={imageLoader}
-      width={32}
-      height={32}
+      width={imageSize}
+      height={imageSize}
       unoptimized
     />
   )

@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
+import { defaultAvatarUrl } from '@/consts/account';
 import { getUserByScreenName } from "@/app/action/account";
+import UserTweets from '@/components/user-tweets';
 import { formatJoinedDate } from "@/utils/date-util";
 
 type Props = {
@@ -49,10 +51,10 @@ export default async function Profile({ params }: Props) {
             <div className="w-24 rounded ring-gray-300 ring-offset-white ring ring-offset-2">
               {/* eslint-disable-next-line */}
               <img
-                src={user.avatarUrl ?? ''}
+                src={user.avatarUrl ?? defaultAvatarUrl}
                 alt="Avatar of user"
-                width={64}
-                height={64}
+                width={128}
+                height={128}
               />
             </div>
           </div>
@@ -71,6 +73,9 @@ export default async function Profile({ params }: Props) {
               <p>{ formatJoinedDate(user.createdAt) }</p>
             </div>
           </div>
+        </div>
+        <div className="mt-8 mb-4">
+          <UserTweets userId={user.id} />
         </div>
       </div>
     </div>
