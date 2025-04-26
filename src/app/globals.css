@@ -1,4 +1,7 @@
 @import "tailwindcss";
+@plugin "daisyui" {
+  exclude: rootcolor;
+}
 
 :root {
   --background: #ffffff;
