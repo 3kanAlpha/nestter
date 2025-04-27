@@ -8,14 +8,14 @@ export default function TweetForm() {
   const [content, setContent] = useState('');
 
   return (
-    <div>
+    <div className="w-[90vw] lg:w-full">
       { JSON.stringify(state) && null }
       <form action={action} className="w-full">
         <textarea
           id="tweet-text-content"
           name="textContent"
           value={content}
-          className="textarea textarea-lg w-full h-36"
+          className="textarea textarea-lg textarea-ghost w-full h-36"
           placeholder="今なにしてる？"
           required
           maxLength={280}
