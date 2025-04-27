@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import { auth } from "@/auth";
 import TweetList from '@/components/tweet-list';
@@ -9,10 +10,18 @@ export default async function Home() {
   }
 
   return (
-    <div className="flex flex-col items-center py-4">
+    <div className="flex flex-col items-center pb-4 lg:pt-4">
       <div className="w-screen lg:w-lg">
-        <TweetList />
+        <Suspense fallback={<Loading />}>
+          <TweetList />
+        </Suspense>
       </div>
     </div>
   );
+}
+
+function Loading() {
+  return (
+    <span className="loading loading-spinner loading-md mx-auto"></span>
+  )
 }

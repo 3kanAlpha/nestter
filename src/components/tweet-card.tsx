@@ -53,7 +53,7 @@ export default function TweetCard({ tweet, user, isRetweet = false }: Props) {
             </p>
           </div>
           <div className="mb-4 grow">
-            <p className="whitespace-pre-wrap wrap-anywhere pr-1">
+            <p className="whitespace-pre-wrap wrap-anywhere overflow-hidden text-clip pr-1">
               <TweetText textContent={tweet.textContent} />
             </p>
           </div>

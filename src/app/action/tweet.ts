@@ -2,14 +2,14 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { getTableColumns, eq, desc } from "drizzle-orm";
+import { getTableColumns, eq, desc, lt } from "drizzle-orm";
 
 import { auth } from "@/auth";
 import { db } from "@/db/client";
 import { tweets, users, InsertTweet } from "@/db/schema";
 import { getStringLength } from "@/utils/string-util";
 
-export async function getLatestTweets() {
+export async function getGlobalTimeline(lastTweetId: number) {
   const res = await db
     .select({
       tweet: {
@@ -23,6 +23,7 @@ export async function getLatestTweets() {
       }
     })
     .from(tweets)
+    .where(lastTweetId > 0 ? lt(tweets.id, lastTweetId) : undefined)
     .innerJoin(users, eq(tweets.userId, users.id))
     .limit(20)
     .orderBy(desc(tweets.createdAt));
