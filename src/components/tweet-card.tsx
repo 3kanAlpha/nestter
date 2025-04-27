@@ -22,7 +22,7 @@ type Props = {
 
 export default function TweetCard({ tweet, user, isRetweet = false }: Props) {
   return (
-    <div className="card card-border bg-base-100 w-full p-3 join-item">
+    <div className="card card-border bg-base-100 dark:bg-tw-body w-full p-3 join-item">
       { isRetweet && (
         <div className="flex flex-row items-center gap-1 text-gray-500 text-sm mb-1 pl-10">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="size-5">
@@ -48,7 +48,7 @@ export default function TweetCard({ tweet, user, isRetweet = false }: Props) {
                 <span className="font-semibold">{ user.displayName }</span><span className="ml-2 text-gray-500 text-sm">@{ user.screenName }</span>
               </Link>
             </p>
-            <p className="text-gray-500 text-sm">
+            <p className="text-gray-500 text-sm min-w-fit">
               { formatDistanceToNow(new Date(tweet.createdAt)) }
             </p>
           </div>
