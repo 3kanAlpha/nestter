@@ -1,6 +1,6 @@
 {
   "name": "nestter",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
@@ -11,7 +11,9 @@
   },
   "dependencies": {
     "@auth/neon-adapter": "^1.9.0",
+    "@cf-wasm/photon": "^0.1.29",
     "@neondatabase/serverless": "^1.0.0",
+    "aws4fetch": "^1.0.20",
     "date-fns": "^4.1.0",
     "drizzle-orm": "^0.42.0",
     "next": "15.3.1",

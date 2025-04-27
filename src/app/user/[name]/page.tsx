@@ -1,4 +1,6 @@
-import type { Metadata } from 'next'
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { auth } from '@/auth';
 import { defaultAvatarUrl } from '@/consts/account';
 import { getUserByScreenName } from "@/app/action/account";
 import UserTweets from '@/components/user-tweets';
@@ -44,19 +46,34 @@ export default async function Profile({ params }: Props) {
     )
   }
 
+  const session = await auth();
+  const isMe = session?.user.screenName === user.screenName;
+
   return (
     <div className="flex flex-col items-center py-4">
       <div className="w-screen lg:w-lg">
         <div className="w-[90vw] lg:w-full mx-auto">
-          <div className="avatar">
-            <div className="w-24 rounded ring-gray-300 ring-offset-white ring ring-offset-2">
-              {/* eslint-disable-next-line */}
-              <img
-                src={user.avatarUrl ?? defaultAvatarUrl}
-                alt="Avatar of user"
-                width={128}
-                height={128}
-              />
+          <div className="flex flex-row justify-between items-end">
+            <div className="avatar">
+              <div className="w-24 rounded ring-gray-300 ring-offset-white ring ring-offset-2">
+                {/* eslint-disable-next-line */}
+                <img
+                  src={user.avatarUrl ?? defaultAvatarUrl}
+                  alt="Avatar of user"
+                  width={128}
+                  height={128}
+                />
+              </div>
+            </div>
+            <div className="flex flex-row gap-2">
+              { isMe && (
+                <Link
+                  href={`/user/${user.screenName}/edit`}
+                  className="btn btn-outline"
+                >
+                  編集
+                </Link>
+              )}
             </div>
           </div>
           <h2 className="mt-4">

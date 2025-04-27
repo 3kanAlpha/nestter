@@ -4,3 +4,9 @@ export async function calcDigest(text: string): Promise<string> {
   const digest = await crypto.subtle.digest('SHA-256', uint8);
   return Array.from(new Uint8Array(digest)).map(v => v.toString(16).padStart(2,'0')).join('');
 }
+
+/** バッファからSHA-256ハッシュ値を計算する */
+export async function calcDigestFromBuffer(buf: ArrayBuffer): Promise<string> {
+  const digest = await crypto.subtle.digest('SHA-256', buf);
+  return Array.from(new Uint8Array(digest)).map(v => v.toString(16).padStart(2,'0')).join('');
+}

@@ -5,7 +5,9 @@
       "name": "nestter",
       "dependencies": {
         "@auth/neon-adapter": "^1.9.0",
+        "@cf-wasm/photon": "^0.1.29",
         "@neondatabase/serverless": "^1.0.0",
+        "aws4fetch": "^1.0.20",
         "date-fns": "^4.1.0",
         "drizzle-orm": "^0.42.0",
         "next": "15.3.1",
@@ -37,6 +39,10 @@
     "@auth/core": ["@auth/core@0.39.0", "", { "dependencies": { "@panva/hkdf": "^1.2.1", "jose": "^6.0.6", "oauth4webapi": "^3.3.0", "preact": "10.24.3", "preact-render-to-string": "6.5.11" }, "peerDependencies": { "@simplewebauthn/browser": "^9.0.1", "@simplewebauthn/server": "^9.0.2", "nodemailer": "^6.8.0" }, "optionalPeers": ["@simplewebauthn/browser", "@simplewebauthn/server", "nodemailer"] }, "sha512-jusviw/sUSfAh6S/wjY5tRmJOq0Itd3ImF+c/b4HB9DfmfChtcfVJTNJeqCeExeCG8oh4PBKRsMQJsn2W6NhFQ=="],
 
     "@auth/neon-adapter": ["@auth/neon-adapter@1.9.0", "", { "dependencies": { "@auth/core": "0.39.0", "@neondatabase/serverless": "^0.10.4" } }, "sha512-7xnr1F76OgmJjMf6vkaHhSli2HVrJP2CEDpGcnANwuU4b/tW/6Xn/55L4QIaVBeIWskLGJGj3PT/WMsRo74wBg=="],
+
+    "@cf-wasm/internals": ["@cf-wasm/internals@0.0.3", "", {}, "sha512-v6PmiQnJIrVvL2IdPg5aCqARSKw/U1JvFsms2cCt3Szx3/3EvtVVhN9MALCh6kZ2CV2fvzs3tmiYezRQ6JyqcQ=="],
+
+    "@cf-wasm/photon": ["@cf-wasm/photon@0.1.29", "", { "dependencies": { "@cf-wasm/internals": "0.0.3" } }, "sha512-dqKRSfcqOQpVATTdMrnGjrf0iUH/Yv5woYn81o2nBv2xwSmB91MsnY1b83Bt24vC/oxVqbvio9JQByXT/Ry1lw=="],
 
     "@cloudflare/kv-asset-handler": ["@cloudflare/kv-asset-handler@0.4.0", "", { "dependencies": { "mime": "^3.0.0" } }, "sha512-+tv3z+SPp+gqTIcImN9o0hqE9xyfQjI1XD9pL6NuKjua9B1y7mNYv0S9cP+QEbA4ppVgGZEmKOvHX5G5Ei1CVA=="],
 
@@ -439,6 +445,8 @@
     "async-sema": ["async-sema@3.1.1", "", {}, "sha512-tLRNUXati5MFePdAk8dw7Qt7DpxPB60ofAgn8WRhW6a2rcimZnYBP9oxHiv0OHy+Wz7kPMG+t4LGdt31+4EmGg=="],
 
     "available-typed-arrays": ["available-typed-arrays@1.0.7", "", { "dependencies": { "possible-typed-array-names": "^1.0.0" } }, "sha512-wvUjBtSGN7+7SjNpq/9M2Tg350UZD3q62IFZLbRAR1bSMlCo1ZaeW+BJ+D090e4hIIZLBcTDWe4Mh4jvUDajzQ=="],
+
+    "aws4fetch": ["aws4fetch@1.0.20", "", {}, "sha512-/djoAN709iY65ETD6LKCtyyEI04XIBP5xVvfmNxsEP0uJB5tyaGBztSryRr4HqMStr9R06PisQE7m9zDTXKu6g=="],
 
     "axe-core": ["axe-core@4.10.3", "", {}, "sha512-Xm7bpRXnDSX2YE2YFfBk2FnF0ep6tmG7xPh8iHee8MIcrgq762Nkce856dYtJYLkuIoYZvGfTs/PbZhideTcEg=="],
 

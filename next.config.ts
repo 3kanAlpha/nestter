@@ -9,7 +9,10 @@ const nextConfig: NextConfig = {
         hostname: "img.nest.mgcup.net",
       }
     ]
-  }
+  },
+  experimental: {
+    authInterrupts: true,
+  },
 };
 
 export default nextConfig;
