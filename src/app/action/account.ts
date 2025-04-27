@@ -135,7 +135,7 @@ export async function updatePublicProfile(prev: any, formData: FormData) {
 
   // 簡易的にプロトコルとドメイン部だけを確認
   const urlPattrn = /^https?:\/\/[\w\.-]+\.\w+/g;
-  if (!urlPattrn.test(website)) {
+  if (website.length > 0 && !urlPattrn.test(website)) {
     return {
       status: "error",
       message: "ウェブサイトに無効なアドレスが指定されています",
