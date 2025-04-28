@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { isValidHashtag } from "@/utils/string-util";
 
 type Props = {
   textContent: string;
@@ -25,7 +26,7 @@ export default function TweetText({ textContent }: Props) {
     }
 
     // ハッシュタグ検出
-    if (part.startsWith("#") && part.slice(1).length <= 50) {
+    if (part.startsWith("#") && isValidHashtag(part.slice(1))) {
       return (
         <Link key={i} href={{
           pathname: "/search",
