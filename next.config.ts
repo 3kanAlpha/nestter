@@ -13,6 +13,7 @@ const nextConfig: NextConfig = {
   experimental: {
     authInterrupts: true,
   },
+  reactStrictMode: false,
 };
 
 export default nextConfig;

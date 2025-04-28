@@ -2,14 +2,35 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { getTableColumns, eq, desc, lt } from "drizzle-orm";
+import { getTableColumns, eq, desc, lt, ilike, and } from "drizzle-orm";
 
 import { auth } from "@/auth";
 import { db } from "@/db/client";
 import { tweets, users, InsertTweet } from "@/db/schema";
 import { getStringLength } from "@/utils/string-util";
 
-export async function getGlobalTimeline(lastTweetId: number) {
+type SearchOptions = {
+  q?: string;
+  from?: string;
+}
+
+export async function searchTweets(lastTweetId: number, options?: SearchOptions) {
+  console.log(`Searching Tweets : lastTweetId=${lastTweetId} options=${JSON.stringify(options)}`);
+  const searchCond = [lastTweetId > 0 ? lt(tweets.id, lastTweetId) : undefined];
+  if (options?.q) {
+    const parts = options.q.split(' ').filter(p => p.trim() !== '') ?? [];
+    const textCond =
+      parts.length > 0
+        ? and(...parts.map(p => ilike(tweets.textContent, `%${p}%`)))
+        : undefined;
+    searchCond.push(textCond);
+  }
+  if (options?.from) {
+    searchCond.push(eq(users.screenName, options.from));
+  }
+
+  const whereClause = and(...searchCond);
+
   const res = await db
     .select({
       tweet: {
@@ -23,7 +44,7 @@ export async function getGlobalTimeline(lastTweetId: number) {
       }
     })
     .from(tweets)
-    .where(lastTweetId > 0 ? lt(tweets.id, lastTweetId) : undefined)
+    .where(whereClause)
     .innerJoin(users, eq(tweets.userId, users.id))
     .limit(20)
     .orderBy(desc(tweets.createdAt));

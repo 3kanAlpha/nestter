@@ -1,11 +1,18 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import { getGlobalTimeline } from "@/app/action/tweet";
+import { searchTweets } from "@/app/action/tweet";
 import TweetCard from "./tweet-card";
 
 import { JoinedTweet } from "@/types/tweet";
 
-export default function TweetList() {
+type Props = {
+  /** 検索対象の文字列（複数可） */
+  q?: string;
+  /** ツイートの送信元ユーザーID */
+  from?: string;
+}
+
+export default function TweetList({ q, from }: Props) {
   const [tweets, setTweets] = useState<JoinedTweet[]>([]);
   const [lastTweetId, setLastTweetId] = useState<number>(0);
   const [isLoading, setLoading] = useState(false);
@@ -15,7 +22,7 @@ export default function TweetList() {
   const loadMoreTweets = useCallback(async () => {
     if (isLoading || !hasMore) return;
     setLoading(true);
-    const newTweets = await getGlobalTimeline(lastTweetId);
+    const newTweets = await searchTweets(lastTweetId, { q: q, from: from });
     setTweets((prev) => [...prev, ...newTweets]);
     if (newTweets.length === 0) {
       setHasMore(false);
@@ -24,7 +31,7 @@ export default function TweetList() {
       setLastTweetId(lastTweet.tweet.id);
     }
     setLoading(false);
-  }, [isLoading, hasMore, lastTweetId]);
+  }, [isLoading, hasMore, lastTweetId, q, from]);
 
   useEffect(() => {
     loadMoreTweets();
@@ -32,7 +39,7 @@ export default function TweetList() {
 
   useEffect(() => {
     const handleScroll = () => {
-      // 既にロード中・取得済みなしであれば呼ばない
+      // 既にロード中、あるいは全取得済みであれば呼ばない
       if (isLoading || !hasMore) return;
       // ページ最下部の判定
       if (

@@ -1,9 +1,10 @@
+import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { auth } from '@/auth';
 import { defaultAvatarUrl } from '@/consts/account';
 import { getUserByScreenName } from "@/app/action/account";
-import UserTweets from '@/components/user-tweets';
+import TweetList from '@/components/tweet-list';
 import { formatJoinedDate } from "@/utils/date-util";
 import { removeProtocol } from '@/utils/string-util';
 
@@ -117,7 +118,9 @@ export default async function Profile({ params }: Props) {
           </div>
         </div>
         <div className="mt-8 mb-4">
-          <UserTweets userId={user.id} />
+          <Suspense>
+            <TweetList from={name} />
+          </Suspense>
         </div>
       </div>
     </div>

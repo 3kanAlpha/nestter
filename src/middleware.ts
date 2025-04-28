@@ -1,5 +1,5 @@
 export { auth as middleware } from "@/auth";
 
 export const config = {
-  matcher: ['/private', '/signup'],
+  matcher: ['/signup', '/search', '/user/:name/edit'],
 }

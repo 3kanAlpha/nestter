@@ -23,6 +23,22 @@ export default function TweetText({ textContent }: Props) {
         </Link>
       );
     }
+
+    // ハッシュタグ検出
+    if (part.startsWith("#") && part.slice(1).length >= 3) {
+      // const tag = part.slice(1);
+      return (
+        <Link key={i} href={{
+          pathname: "/search",
+          query: {
+            q: part,
+          },
+        }}>
+          <span className="text-blue-500 hover:underline">{part}</span>
+        </Link>
+      );
+    }
+
     // それ以外は普通に表示
     return part;
   });
