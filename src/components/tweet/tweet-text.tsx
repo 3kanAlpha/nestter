@@ -25,8 +25,7 @@ export default function TweetText({ textContent }: Props) {
     }
 
     // ハッシュタグ検出
-    if (part.startsWith("#") && part.slice(1).length >= 3) {
-      // const tag = part.slice(1);
+    if (part.startsWith("#") && part.slice(1).length <= 50) {
       return (
         <Link key={i} href={{
           pathname: "/search",
@@ -34,7 +33,7 @@ export default function TweetText({ textContent }: Props) {
             q: part,
           },
         }}>
-          <span className="text-blue-500 hover:underline">{part}</span>
+          <span className="text-blue-500 hover:underline wrap-anywhere">{part}</span>
         </Link>
       );
     }
