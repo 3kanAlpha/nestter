@@ -62,7 +62,11 @@ function ProfileMenu({ screenName, avatarUrl }: ProfileMenuProps) {
               プロフィール
             </Link>
           </li>
-          <li><a>設定</a></li>
+          <li>
+            <Link href="/settings">
+              設定
+            </Link>
+          </li>
           <li><a onClick={onClickSignOut}>ログアウト</a></li>
         </ul>
       </div>

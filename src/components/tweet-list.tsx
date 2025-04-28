@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import { searchTweets } from "@/app/action/tweet";
+import { searchTweets, searchNewTweets } from "@/app/action/tweet";
 import TweetCard from "./tweet-card";
 
 import { JoinedTweet } from "@/types/tweet";
@@ -10,9 +10,11 @@ type Props = {
   q?: string;
   /** ツイートの送信元ユーザーID */
   from?: string;
+  /** 新しいツイートを自動的に取得するか */
+  stream?: boolean;
 }
 
-export default function TweetList({ q, from }: Props) {
+export default function TweetList({ q, from, stream = false }: Props) {
   const [tweets, setTweets] = useState<JoinedTweet[]>([]);
   const [lastTweetId, setLastTweetId] = useState<number>(0);
   const [isLoading, setLoading] = useState(false);
@@ -33,9 +35,28 @@ export default function TweetList({ q, from }: Props) {
     setLoading(false);
   }, [isLoading, hasMore, lastTweetId, q, from]);
 
+  const loadNewTweets = useCallback(async () => {
+    const topTweetId = tweets.length > 0 ? tweets[0].tweet.id : 0;
+    const newTweets = await searchNewTweets(topTweetId, { q: q, from: from });
+    if (newTweets.length > 0) {
+      setTweets((prev) => [...newTweets, ...prev]);
+    }
+  }, [tweets, q, from]);
+
   useEffect(() => {
     loadMoreTweets();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    // 一定間隔で新しいツイートを取得する
+    const timerId = setInterval(() => {
+      if (stream && document.visibilityState === "visible" && window.scrollY < 300) {
+        loadNewTweets();
+      }
+    }, 20 * 1000);
+
+    return () => clearInterval(timerId);
+  }, [stream, loadNewTweets]);
 
   useEffect(() => {
     const handleScroll = () => {

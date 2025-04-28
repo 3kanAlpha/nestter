@@ -13,7 +13,7 @@ export default async function Home() {
     <div className="flex flex-col items-center pb-4 lg:pt-4">
       <div className="w-screen lg:w-lg">
         <Suspense fallback={<Loading />}>
-          <TweetList />
+          <TweetList stream />
         </Suspense>
       </div>
     </div>
