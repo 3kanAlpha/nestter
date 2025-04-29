@@ -10,7 +10,7 @@ import { db } from "@/db/client";
 import { users } from "@/db/schema";
 import { uploadUserAvatar } from './image';
 import { getStringLength } from "@/utils/string-util";
-import { calcDigestFromBuffer } from '@/utils/hash-util';
+import { calcDigestFromBuffer, calcDigest } from '@/utils/hash-util';
 
 /** アカウントの初期設定をする */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -56,6 +56,15 @@ export async function initializeAccount(prev: any, formData: FormData) {
     return {
       status: "error",
       message: "display name cannot be empty",
+    }
+  }
+
+  const regPassword = (formData.get("regPassword") as string).trim();
+  const regPassHash = await calcDigest(regPassword);
+  if (regPassHash !== process.env.REG_PASSWORD) {
+    return {
+      status: "error",
+      message: "登録用パスワードが一致しません",
     }
   }
 

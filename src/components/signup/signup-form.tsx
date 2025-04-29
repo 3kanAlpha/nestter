@@ -49,7 +49,18 @@ export default function SignupForm() {
             required
             maxLength={50}
           />
-          <div className="validator-hint">表示名は空白でなく、かつ50文字以下である必要があります。</div>
+          <div className="validator-hint hidden">表示名は空白でなく、かつ50文字以下である必要があります。</div>
+        </fieldset>
+        <fieldset className="fieldset">
+          <legend className="fieldset-legend">登録パスワード</legend>
+          <input
+            type="password"
+            name="regPassword"
+            className="input w-[90vw] lg:w-md"
+            placeholder="Type here"
+            required
+            maxLength={50}
+          />
         </fieldset>
         <button className="btn btn-wide btn-primary mt-4" type="submit" disabled={pending || isDuplicated}>
           { pending ? <LoadingContent /> : "Submit"}
