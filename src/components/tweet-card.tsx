@@ -6,6 +6,7 @@ import { formatDistanceToNow } from "date-fns";
 import SingleImage from "./tweet/single-image";
 import UserAvatar from "./header/user-avatar";
 import TweetText from "./tweet/tweet-text";
+import FavoriteButton from "./tweet/card/favorite-button";
 import { defaultAvatarUrl } from '@/consts/account';
 import { deleteTweet } from "@/app/action/tweet";
 import type { SelectTweet } from "@/db/schema";
@@ -32,9 +33,10 @@ type Props = {
   attachments: Attachments | null;
   isRetweet?: boolean;
   authUserId?: number;
+  isFaved?: boolean;
 }
 
-export default function TweetCard({ tweet, user, attachments, isRetweet = false, authUserId }: Props) {
+export default function TweetCard({ tweet, user, attachments, isRetweet = false, authUserId, isFaved = false }: Props) {
   const pathname = usePathname();
   const router = useRouter();
   const dialogId = `tweet-card-${tweet.id}-delete-confirm-dialog`;
@@ -86,27 +88,28 @@ export default function TweetCard({ tweet, user, attachments, isRetweet = false,
                 </div>
               ) }
             </div>
-            <div className="flex flex-row justify-around w-[90%] text-gray-500">
-              <div>
+            <div className="flex flex-row justify-between w-[90%] text-gray-500">
+              {/* リプライ */}
+              <div className="flex flex-row items-center gap-1 w-6">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M7.49 12 3.74 8.248m0 0 3.75-3.75m-3.75 3.75h16.5V19.5" />
                 </svg>
               </div>
-              <div>
+              {/* リツイート */}
+              <div className="flex flex-row items-center gap-1 w-6">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 0 0-3.7-3.7 48.678 48.678 0 0 0-7.324 0 4.006 4.006 0 0 0-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 0 0 3.7 3.7 48.656 48.656 0 0 0 7.324 0 4.006 4.006 0 0 0 3.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3-3 3" />
                 </svg>
               </div>
-              <div>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
-                </svg>
-              </div>
+              {/* いいね */}
+              <FavoriteButton tweetId={tweet.id} favCount={tweet.favoriteCount} isFaved={isFaved} auth={authUserId !== undefined} />
+              {/* 共有 */}
               <div>
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185Z" />
                 </svg>
               </div>
+              {/* その他ツイート操作 */}
               <div className="dropdown dropdown-end">
                 <div tabIndex={0} role="button">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4">

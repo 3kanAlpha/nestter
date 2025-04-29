@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import { searchTweetsB } from "@/app/action/tweet";
-import TweetCard from "./tweet-card";
+import { searchFavedTweets } from "@/app/action/tweet";
+import TweetCard from "@/components/tweet-card";
 
 import { JoinedTweet } from "@/types/tweet";
 
@@ -14,13 +14,12 @@ type Props = {
   stream?: boolean;
   /** ログインしているユーザーのID */
   authUserId?: number;
-  /** いいねした投稿のみを検索するか */
-  searchFaved?: boolean;
+  /** いいねを検索する対象のユーザーID */
+  userId: number;
 }
 
-export default function TweetList({ q, from, stream = false, authUserId, searchFaved = false }: Props) {
+export default function LikedTweetList({ q, from, stream = false, authUserId, userId }: Props) {
   const [tweets, setTweets] = useState<JoinedTweet[]>([]);
-  const [lastTweetId, setLastTweetId] = useState<number>(0);
   const [isLoading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
 
@@ -28,25 +27,23 @@ export default function TweetList({ q, from, stream = false, authUserId, searchF
   const loadMoreTweets = useCallback(async () => {
     if (isLoading || !hasMore) return;
     setLoading(true);
-    const newTweets = await searchTweetsB(undefined, lastTweetId > 0 ? lastTweetId-1 : undefined, { q: q, from: from, searchFaved: searchFaved });
+    const lastTweet = tweets[tweets.length-1];
+    const newTweets = await searchFavedTweets(userId, undefined, lastTweet ? lastTweet.engagement?.favedTimestamp : undefined, { q: q, from: from });
     setTweets((prev) => [...prev, ...newTweets]);
     if (newTweets.length === 0) {
       setHasMore(false);
-    } else {
-      const lastTweet = newTweets[newTweets.length-1];
-      setLastTweetId(lastTweet.tweet.id);
-    }
+    } 
     setLoading(false);
-  }, [isLoading, hasMore, lastTweetId, q, from, searchFaved]);
+  }, [tweets, isLoading, hasMore, userId, q, from]);
 
   /** 新しいツイートを読み込む */
   const loadNewTweets = useCallback(async () => {
-    const topTweetId = tweets.length > 0 ? tweets[0].tweet.id : 0;
-    const newTweets = await searchTweetsB(topTweetId+1, undefined, { q: q, from: from, searchFaved: searchFaved });
+    const topTweet = tweets[0];
+    const newTweets = await searchFavedTweets(userId, topTweet ? topTweet.engagement?.favedTimestamp : undefined, undefined, { q: q, from: from });
     if (newTweets.length > 0) {
       setTweets((prev) => [...newTweets, ...prev]);
     }
-  }, [tweets, q, from, searchFaved]);
+  }, [tweets, userId, q, from]);
 
   useEffect(() => {
     loadMoreTweets();

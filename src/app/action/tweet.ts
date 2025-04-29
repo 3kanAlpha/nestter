@@ -2,22 +2,120 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { getTableColumns, eq, desc, lt, gt, ilike, and } from "drizzle-orm";
+import { getTableColumns, eq, desc, lt, gt, lte, gte, ilike, and, sql } from "drizzle-orm";
 
 import { auth } from "@/auth";
 import { db } from "@/db/client";
-import { tweets, users, tweetAttachments, InsertTweet } from "@/db/schema";
+import { tweets, users, tweetAttachments, favorites, InsertTweet } from "@/db/schema";
 import { getStringLength } from "@/utils/string-util";
 import { uploadTweetAttachment } from './image';
 
 type SearchOptions = {
   q?: string;
   from?: string;
+  searchFaved?: boolean;
 }
 
-export async function searchTweets(lastTweetId: number, options?: SearchOptions) {
-  console.log(`Searching Tweets : lastTweetId=${lastTweetId} options=${JSON.stringify(options)}`);
-  const searchCond = [lastTweetId > 0 ? lt(tweets.id, lastTweetId) : undefined];
+export async function searchTweetsB(minTweetId?: number, maxTweetId?: number, options?: SearchOptions) {
+  const session = await auth();
+  if (options?.searchFaved && (!session || !session.user.screenName)) {
+    return [];
+  }
+  const sesUserId = Number(session?.user.id);
+
+  console.log(`Searching Tweets : range=[${minTweetId ?? 1}...${maxTweetId ?? ""}] options=${JSON.stringify(options)}`);
+  const searchCond = [and(minTweetId ? gte(tweets.id, minTweetId) : undefined, (maxTweetId !== undefined) ? lte(tweets.id, maxTweetId) : undefined)];
+  if (options?.q) {
+    const parts = options.q.split(' ').filter(p => p.trim() !== '') ?? [];
+    const textCond =
+      parts.length > 0
+        ? and(...parts.map(p => ilike(tweets.textContent, `%${p}%`)))
+        : undefined;
+    searchCond.push(textCond);
+  }
+  if (options?.from) {
+    searchCond.push(eq(users.screenName, options.from));
+  }
+
+  const whereClause = and(...searchCond);
+
+  if (options?.searchFaved) {
+    const res = await db
+      .select({
+        tweet: {
+          ...getTableColumns(tweets),
+        },
+        user: {
+          id: users.id,
+          screenName: users.screenName,
+          displayName: users.displayName,
+          avatarUrl: users.avatarUrl,
+        },
+        attachment: {
+          id: tweetAttachments.id,
+          fileUrl: tweetAttachments.fileUrl,
+          mimeType: tweetAttachments.mimeType,
+          isSpoiler: tweetAttachments.isSpoiler,
+          width: tweetAttachments.imageWidth,
+          height: tweetAttachments.imageHeight,
+        },
+        engagement: {
+          isFaved: sql<boolean>`${favorites.userId} IS NOT NULL`.as('isFaved'),
+          favedTimestamp: favorites.createdAt,
+        }
+      })
+      .from(tweets)
+      .where(whereClause)
+      .innerJoin(users, eq(tweets.userId, users.id))
+      .innerJoin(favorites, and(eq(tweets.id, favorites.tweetId), eq(favorites.userId, sesUserId))) // いいねした投稿のみフィルタ
+      .leftJoin(tweetAttachments, eq(tweets.id, tweetAttachments.tweetId))
+      .limit(20)
+      .orderBy(desc(favorites.createdAt));
+    return res;
+  } else {
+    const res = await db
+      .select({
+        tweet: {
+          ...getTableColumns(tweets),
+        },
+        user: {
+          id: users.id,
+          screenName: users.screenName,
+          displayName: users.displayName,
+          avatarUrl: users.avatarUrl,
+        },
+        attachment: {
+          id: tweetAttachments.id,
+          fileUrl: tweetAttachments.fileUrl,
+          mimeType: tweetAttachments.mimeType,
+          isSpoiler: tweetAttachments.isSpoiler,
+          width: tweetAttachments.imageWidth,
+          height: tweetAttachments.imageHeight,
+        },
+        engagement: {
+          isFaved: sql<boolean>`${favorites.userId} IS NOT NULL`.as('isFaved'),
+          favedTimestamp: favorites.createdAt,
+        }
+      })
+      .from(tweets)
+      .where(whereClause)
+      .innerJoin(users, eq(tweets.userId, users.id))
+      .leftJoin(favorites, and(eq(tweets.id, favorites.tweetId), eq(favorites.userId, sesUserId)))
+      .leftJoin(tweetAttachments, eq(tweets.id, tweetAttachments.tweetId))
+      .limit(20)
+      .orderBy(desc(tweets.createdAt));
+    return res;
+  }
+}
+
+export async function searchFavedTweets(targetUserId: number, minTweetTimestamp?: string, maxTweetTimestamp?: string, options?: SearchOptions) {
+  const session = await auth();
+  if (!session || !session.user.screenName) {
+    return [];
+  }
+
+  console.log(`searchFavedTweets : user=${targetUserId} range=[${minTweetTimestamp ?? ""}...${maxTweetTimestamp ?? ""}] options=${JSON.stringify(options)}`);
+  const searchCond = [and(minTweetTimestamp ? gt(favorites.createdAt, minTweetTimestamp) : undefined, maxTweetTimestamp ? lt(favorites.createdAt, maxTweetTimestamp) : undefined)];
   if (options?.q) {
     const parts = options.q.split(' ').filter(p => p.trim() !== '') ?? [];
     const textCond =
@@ -50,61 +148,19 @@ export async function searchTweets(lastTweetId: number, options?: SearchOptions)
         isSpoiler: tweetAttachments.isSpoiler,
         width: tweetAttachments.imageWidth,
         height: tweetAttachments.imageHeight,
+      },
+      engagement: {
+        isFaved: sql<boolean>`${favorites.userId} IS NOT NULL`.as('isFaved'),
+        favedTimestamp: favorites.createdAt,
       }
     })
     .from(tweets)
     .where(whereClause)
     .innerJoin(users, eq(tweets.userId, users.id))
+    .innerJoin(favorites, and(eq(tweets.id, favorites.tweetId), eq(favorites.userId, targetUserId))) // いいねした投稿のみフィルタ
     .leftJoin(tweetAttachments, eq(tweets.id, tweetAttachments.tweetId))
     .limit(20)
-    .orderBy(desc(tweets.createdAt));
-  return res;
-}
-
-/** 指定されたIDよりも新しいツイートを検索する */
-export async function searchNewTweets(topTweetId: number, options?: SearchOptions) {
-  console.log(`calling searchNewTweets : topTweetId=${topTweetId} options=${JSON.stringify(options)}`);
-  const searchCond = [topTweetId > 0 ? gt(tweets.id, topTweetId) : undefined];
-  if (options?.q) {
-    const parts = options.q.split(' ').filter(p => p.trim() !== '') ?? [];
-    const textCond =
-      parts.length > 0
-        ? and(...parts.map(p => ilike(tweets.textContent, `%${p}%`)))
-        : undefined;
-    searchCond.push(textCond);
-  }
-  if (options?.from) {
-    searchCond.push(eq(users.screenName, options.from));
-  }
-
-  const whereClause = and(...searchCond);
-
-  const res = await db
-    .select({
-      tweet: {
-        ...getTableColumns(tweets),
-      },
-      user: {
-        id: users.id,
-        screenName: users.screenName,
-        displayName: users.displayName,
-        avatarUrl: users.avatarUrl,
-      },
-      attachment: {
-        id: tweetAttachments.id,
-        fileUrl: tweetAttachments.fileUrl,
-        mimeType: tweetAttachments.mimeType,
-        isSpoiler: tweetAttachments.isSpoiler,
-        width: tweetAttachments.imageWidth,
-        height: tweetAttachments.imageHeight,
-      }
-    })
-    .from(tweets)
-    .where(whereClause)
-    .innerJoin(users, eq(tweets.userId, users.id))
-    .leftJoin(tweetAttachments, eq(tweets.id, tweetAttachments.tweetId))
-    .limit(20)
-    .orderBy(desc(tweets.createdAt));
+    .orderBy(desc(favorites.createdAt));
   return res;
 }
 

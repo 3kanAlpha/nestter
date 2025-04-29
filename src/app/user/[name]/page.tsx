@@ -5,6 +5,7 @@ import { auth } from '@/auth';
 import { defaultAvatarUrl } from '@/consts/account';
 import { getUserByScreenName } from "@/app/action/account";
 import TweetList from '@/components/tweet-list';
+import LikedTweetList from '@/components/tweet/liked-tweet-list';
 import { formatJoinedDate } from "@/utils/date-util";
 import { removeProtocol } from '@/utils/string-util';
 
@@ -119,9 +120,21 @@ export default async function Profile({ params }: Props) {
           </div>
         </div>
         <div className="mt-8 mb-4">
-          <Suspense>
-            <TweetList from={name} authUserId={sesUserId} />
-          </Suspense>
+          <div className="tabs tabs-border">
+            <input type="radio" name="user_page_tabs" className="tab" aria-label="ツイート" defaultChecked />
+            <div className="tab-content">
+              <Suspense>
+                <TweetList from={name} authUserId={sesUserId} />
+              </Suspense>
+            </div>
+
+            <input type="radio" name="user_page_tabs" className="tab" aria-label="いいね" />
+            <div className="tab-content">
+              <Suspense>
+                <LikedTweetList authUserId={sesUserId} userId={user.id} />
+              </Suspense>
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -16,4 +16,8 @@ export type JoinedTweet = {
     width: number;
     height: number;
   } | null;
+  engagement: {
+    isFaved: boolean;
+    favedTimestamp: string;
+  } | null;
 }

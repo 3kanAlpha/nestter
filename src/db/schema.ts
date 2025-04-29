@@ -132,3 +132,5 @@ export type SelectUser = typeof users.$inferSelect;
 
 export type SelectAttachments = typeof tweetAttachments.$inferSelect;
 export type InsertAttachments = typeof tweetAttachments.$inferInsert;
+
+export type InsertFavorites = typeof favorites.$inferInsert;
