@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import Form from 'next/form';
 import { insertTweet } from "@/app/action/tweet";
 
 export default function TweetForm() {
@@ -10,7 +11,7 @@ export default function TweetForm() {
   return (
     <div className="w-[90vw] lg:w-full">
       { JSON.stringify(state) && null }
-      <form action={action} className="w-full">
+      <Form action={action} className="w-full">
         <textarea
           id="tweet-text-content"
           name="textContent"
@@ -22,6 +23,12 @@ export default function TweetForm() {
           autoFocus
           onChange={(e)=>setContent(e.target.value)}
         ></textarea>
+        <input
+          type="file"
+          name="attachments"
+          className="file-input file-input-ghost w-full mt-2"
+          accept="image/*"
+        />
         { state?.status === "error" && (
           <p className="text-sm text-error mt-2">ツイートの投稿に失敗しました：<br />{ state.message }</p>
         ) }
@@ -34,7 +41,7 @@ export default function TweetForm() {
             { pending ? <LoadingContent /> : "Tweet"}
           </button>
         </div>
-      </form>
+      </Form>
     </div>
   )
 }

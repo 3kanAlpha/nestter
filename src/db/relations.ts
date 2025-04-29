@@ -1,11 +1,12 @@
 import { relations } from "drizzle-orm/relations";
-import { users, tweets, favorites, follows } from "./schema";
+import { users, tweets, tweetAttachments, favorites, follows } from "./schema";
 
 export const tweetsRelations = relations(tweets, ({one, many}) => ({
 	user: one(users, {
 		fields: [tweets.userId],
 		references: [users.id]
 	}),
+	tweetAttachments: many(tweetAttachments),
 	favorites: many(favorites),
 }));
 
@@ -17,6 +18,13 @@ export const usersRelations = relations(users, ({many}) => ({
 	}),
 	follows_followeeId: many(follows, {
 		relationName: "follows_followeeId_users_id"
+	}),
+}));
+
+export const tweetAttachmentsRelations = relations(tweetAttachments, ({one}) => ({
+	tweet: one(tweets, {
+		fields: [tweetAttachments.tweetId],
+		references: [tweets.id]
 	}),
 }));
 

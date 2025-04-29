@@ -8,12 +8,13 @@ export default async function Home() {
   if (session?.user && !session.user.screenName) {
     redirect("/signup");
   }
+  const sesUserId = session?.user ? Number(session.user.id) : undefined;
 
   return (
     <div className="flex flex-col items-center pb-4 lg:pt-4">
       <div className="w-screen lg:w-lg">
         <Suspense fallback={<Loading />}>
-          <TweetList stream />
+          <TweetList stream authUserId={sesUserId} />
         </Suspense>
       </div>
     </div>

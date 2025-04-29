@@ -12,9 +12,11 @@ type Props = {
   from?: string;
   /** 新しいツイートを自動的に取得するか */
   stream?: boolean;
+  /** ログインしているユーザーのID */
+  authUserId?: number;
 }
 
-export default function TweetList({ q, from, stream = false }: Props) {
+export default function TweetList({ q, from, stream = false, authUserId }: Props) {
   const [tweets, setTweets] = useState<JoinedTweet[]>([]);
   const [lastTweetId, setLastTweetId] = useState<number>(0);
   const [isLoading, setLoading] = useState(false);
@@ -77,7 +79,7 @@ export default function TweetList({ q, from, stream = false }: Props) {
   return (
     <div className="join join-vertical w-full">
       { tweets.map((tweet) => (
-        <TweetCard key={tweet.tweet.id} tweet={tweet.tweet} user={tweet.user} />
+        <TweetCard key={tweet.tweet.id} tweet={tweet.tweet} user={tweet.user} attachments={tweet.attachment ? [tweet.attachment] : null} authUserId={authUserId} />
       )) }
       {isLoading && <div className="text-center my-4"><span className="loading loading-spinner loading-md"></span></div>}
     </div>

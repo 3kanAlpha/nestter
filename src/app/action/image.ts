@@ -2,6 +2,9 @@
 import { client, R2_URL } from "./r2/client";
 import { PhotonImage, SamplingFilter, resize } from "@cf-wasm/photon/next";
 import { auth } from "@/auth";
+import { db } from "@/db/client";
+import { tweetAttachments, InsertAttachments } from "@/db/schema";
+import { calcDigestFromUint8Array } from "@/utils/hash-util";
 
 const BUCKET_NAME = "nestter-images";
 
@@ -40,6 +43,36 @@ async function resizeUserAvatar(bytes: Uint8Array): Promise<Uint8Array | null> {
   return outBytes;
 }
 
+/** 画像を長辺が最大2000pxとなるように変形してwebp形式に変換する */
+async function resizeImage(buf: ArrayBuffer): Promise<[Uint8Array, number, number]> {
+  const bytes = new Uint8Array(buf);
+  const image = PhotonImage.new_from_byteslice(bytes);
+  const width = image.get_width();
+  const height = image.get_height();
+  const longSide = Math.max(width, height);
+  if (longSide <= 2000) {
+    const outBytes = image.get_bytes_jpeg(85);
+    image.free();
+    return [outBytes, width, height];
+  }
+
+  const dr = longSide / 2000;
+  const nw = Math.trunc(width / dr);
+  const nh = Math.trunc(height / dr);
+  const outImage = resize(
+    image,
+    nw,
+    nh,
+    SamplingFilter.Lanczos3,
+  )
+  const outBytes = outImage.get_bytes_jpeg(85);
+
+  // free memory
+  image.free();
+  outImage.free();
+  return [outBytes, nw, nh];
+}
+
 /** ユーザーのアイコン画像をR2にアップロードする */
 export async function uploadUserAvatar(avatar: Uint8Array, fileKey: string, oldUrl?: string): Promise<string | null> {
   const session = await auth();
@@ -73,4 +106,47 @@ export async function uploadUserAvatar(avatar: Uint8Array, fileKey: string, oldU
   }
 
   return null;
+}
+
+export async function uploadTweetAttachment(attachment: ArrayBuffer, parentTweetId: number): Promise<boolean> {
+  const session = await auth();
+  if (!session || !session.user.screenName) {
+    return false;
+  }
+
+  const [resizedBytes, width, height] = await resizeImage(attachment);
+
+  const hash = await calcDigestFromUint8Array(resizedBytes);
+  const p1 = hash.substring(0, 2);
+  const p2 = hash.substring(2, 4);
+  const fileKey = `data/${p1}/${p2}/${hash}.jpeg`;
+
+  const fileUrl = `${R2_URL}/${BUCKET_NAME}/${fileKey}`;
+
+  const res = await client.fetch(fileUrl, {
+    method: "PUT",
+    headers: {
+      host: new URL(R2_URL).host,
+      "Content-Length": resizedBytes.length.toString(),
+    },
+    body: resizedBytes,
+  });
+
+  if (res.ok) {
+    const fileUrl = "https://img.nest.mgcup.net/" + fileKey;
+
+    const reqBody: InsertAttachments = {
+      tweetId: parentTweetId,
+      fileUrl: fileUrl,
+      mimeType: "image/jpeg",
+      imageWidth: width,
+      imageHeight: height,
+    }
+
+    const row = await db.insert(tweetAttachments).values(reqBody).returning({ newAttachmentId: tweetAttachments.id });
+
+    return row.length > 0;
+  }
+
+  return false;
 }

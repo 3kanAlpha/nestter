@@ -49,6 +49,7 @@ export default async function Profile({ params }: Props) {
 
   const session = await auth();
   const isMe = session?.user.screenName === user.screenName;
+  const sesUserId = session?.user ? Number(session.user.id) : undefined;
 
   return (
     <div className="flex flex-col items-center py-4">
@@ -119,7 +120,7 @@ export default async function Profile({ params }: Props) {
         </div>
         <div className="mt-8 mb-4">
           <Suspense>
-            <TweetList from={name} />
+            <TweetList from={name} authUserId={sesUserId} />
           </Suspense>
         </div>
       </div>

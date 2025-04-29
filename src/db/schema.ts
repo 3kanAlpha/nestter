@@ -1,4 +1,4 @@
-import { pgTable, serial, integer, varchar, text, bigint, foreignKey, check, timestamp, jsonb, unique, primaryKey } from "drizzle-orm/pg-core"
+import { pgTable, serial, integer, varchar, text, bigint, foreignKey, check, timestamp, jsonb, boolean, unique, primaryKey } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 
@@ -37,6 +37,22 @@ export const tweets = pgTable("tweets", {
 	check("text_max_length", sql`length(text_content) <= 280`),
 ]);
 
+export const tweetAttachments = pgTable("tweet_attachments", {
+	id: integer().primaryKey().generatedAlwaysAsIdentity({ name: "tweet_attachments_id_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 2147483647, cache: 1 }),
+	tweetId: integer("tweet_id").notNull(),
+	fileUrl: text("file_url").notNull(),
+	mimeType: text("mime_type"),
+	isSpoiler: boolean("is_spoiler").default(false).notNull(),
+	imageWidth: integer("image_width").notNull(),
+	imageHeight: integer("image_height").notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.tweetId],
+			foreignColumns: [tweets.id],
+			name: "tweet_id_fkey"
+		}),
+]);
+
 export const sessions = pgTable("sessions", {
 	id: serial().primaryKey().notNull(),
 	userId: integer().notNull(),
@@ -61,6 +77,7 @@ export const users = pgTable("users", {
 	unique("users_screen_name_key").on(table.screenName),
 	check("display_name_max_length", sql`length("displayName") <= 50`),
 	check("screen_name_max_length", sql`(length("screenName") >= 3) AND (length("screenName") <= 15) AND ("screenName" ~ '^[A-Za-z0-9_]+$'::text)`),
+	check("bio_max_length", sql`length(bio) <= 160`),
 ]);
 
 export const verificationToken = pgTable("verification_token", {
@@ -112,3 +129,6 @@ export type SelectTweet = typeof tweets.$inferSelect;
 export type InsertTweet = typeof tweets.$inferInsert;
 
 export type SelectUser = typeof users.$inferSelect;
+
+export type SelectAttachments = typeof tweetAttachments.$inferSelect;
+export type InsertAttachments = typeof tweetAttachments.$inferInsert;

@@ -7,5 +7,13 @@ export type JoinedTweet = {
     screenName: string | null;
     displayName: string | null;
     avatarUrl: string | null;
-  }
+  };
+  attachment: {
+    id: number;
+    fileUrl: string;
+    mimeType: string | null;
+    isSpoiler: boolean;
+    width: number;
+    height: number;
+  } | null;
 }
