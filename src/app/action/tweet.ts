@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { getTableColumns, eq, desc, lt, gt, lte, gte, ilike, and, sql } from "drizzle-orm";
+import { getTableColumns, aliasedTable, eq, desc, lt, gt, lte, gte, ilike, and, sql } from "drizzle-orm";
 
 import { auth } from "@/auth";
 import { db } from "@/db/client";
@@ -21,7 +21,8 @@ export async function searchTweetsB(minTweetId?: number, maxTweetId?: number, op
   if (options?.searchFaved && (!session || !session.user.screenName)) {
     return [];
   }
-  const sesUserId = Number(session?.user.id);
+  const rawUserId = Number(session?.user.id)
+  const sesUserId = Number.isFinite(rawUserId) ? rawUserId : 0;
 
   console.log(`Searching Tweets : range=[${minTweetId ?? 1}...${maxTweetId ?? ""}] options=${JSON.stringify(options)}`);
   const searchCond = [and(minTweetId ? gte(tweets.id, minTweetId) : undefined, (maxTweetId !== undefined) ? lte(tweets.id, maxTweetId) : undefined)];
@@ -108,11 +109,13 @@ export async function searchTweetsB(minTweetId?: number, maxTweetId?: number, op
   }
 }
 
+const myFav = aliasedTable(favorites, 'myfav');
+
+/** ユーザーIDがtargetUserIdであるユーザーのいいねを取得する */
 export async function searchFavedTweets(targetUserId: number, minTweetTimestamp?: string, maxTweetTimestamp?: string, options?: SearchOptions) {
   const session = await auth();
-  if (!session || !session.user.screenName) {
-    return [];
-  }
+  const rawUserId = Number(session?.user.id);
+  const myUserId = Number.isFinite(rawUserId) ? rawUserId : 0; // 閲覧しているユーザーのID
 
   console.log(`searchFavedTweets : user=${targetUserId} range=[${minTweetTimestamp ?? ""}...${maxTweetTimestamp ?? ""}] options=${JSON.stringify(options)}`);
   const searchCond = [and(minTweetTimestamp ? gt(favorites.createdAt, minTweetTimestamp) : undefined, maxTweetTimestamp ? lt(favorites.createdAt, maxTweetTimestamp) : undefined)];
@@ -150,14 +153,15 @@ export async function searchFavedTweets(targetUserId: number, minTweetTimestamp?
         height: tweetAttachments.imageHeight,
       },
       engagement: {
-        isFaved: sql<boolean>`${favorites.userId} IS NOT NULL`.as('isFaved'),
+        isFaved: sql<boolean>`${myFav.userId} IS NOT NULL`.as('isFaved'),
         favedTimestamp: favorites.createdAt,
       }
     })
     .from(tweets)
     .where(whereClause)
     .innerJoin(users, eq(tweets.userId, users.id))
-    .innerJoin(favorites, and(eq(tweets.id, favorites.tweetId), eq(favorites.userId, targetUserId))) // いいねした投稿のみフィルタ
+    .innerJoin(favorites, and(eq(tweets.id, favorites.tweetId), eq(favorites.userId, targetUserId))) // 対象のユーザーがいいねした投稿のみフィルタ
+    .leftJoin(myFav, and(eq(tweets.id, myFav.tweetId), eq(myFav.userId, myUserId))) // 自分がいいねしているかどうか検証するため
     .leftJoin(tweetAttachments, eq(tweets.id, tweetAttachments.tweetId))
     .limit(20)
     .orderBy(desc(favorites.createdAt));
