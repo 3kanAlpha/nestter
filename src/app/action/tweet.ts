@@ -141,6 +141,9 @@ export async function insertTweet(prev: any, formData: FormData) {
     };
   }
 
+  const isSpoilerText = formData.get("isSpoiler") as string;
+  const isSpoiler = isSpoilerText === "on";
+
   const reqBody: InsertTweet = {
     textContent: content,
     userId: sesUserId,
@@ -158,7 +161,7 @@ export async function insertTweet(prev: any, formData: FormData) {
     const parentTweetId = row[0].newTweetId;
     const arrayBuf = await attachments.arrayBuffer();
 
-    const r = await uploadTweetAttachment(arrayBuf, parentTweetId);
+    const r = await uploadTweetAttachment(arrayBuf, parentTweetId, isSpoiler);
     if (!r) {
       return {
         status: "error",

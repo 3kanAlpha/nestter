@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import Image, { ImageLoaderProps } from "next/image";
 
 type Attachment = {
@@ -16,22 +17,66 @@ type Props = {
 
 export default function SingleImage({ attachment }: Props) {
   const aspect = `aspect-${attachment.width}/${attachment.height}`;
+  const [hideImage, setHideImage] = useState(attachment.isSpoiler);
+  const [showOverlay, setShowOverlay] = useState(false);
 
   function imageLoader({ src }: ImageLoaderProps) {
     return src;
   }
 
+  function showImage() {
+    if (hideImage) {
+      setHideImage(false);
+    }
+  }
+
+  function toggleOverlay() {
+    setShowOverlay(!showOverlay);
+  }
+
   return (
-    <div className={`w-full ${aspect}`}>
-      <Image
-        className="rounded-lg"
-        src={attachment.fileUrl}
-        alt="Image"
-        loader={imageLoader}
-        unoptimized
-        width={attachment.width}
-        height={attachment.height}
-      />
-    </div>
+    <>
+      <div className={`stack w-full ${aspect}`}>
+        { hideImage && (
+          <div
+            className="text-primary-content grid place-content-center"
+            onClick={showImage}
+          >
+            クリックして表示
+          </div>
+        ) }
+        <Image
+          className={`rounded-lg ${hideImage ? "blur-md brightness-50" : undefined}`}
+          src={attachment.fileUrl}
+          alt="Image"
+          loader={imageLoader}
+          unoptimized
+          width={attachment.width}
+          height={attachment.height}
+          onClick={toggleOverlay}
+        />
+      </div>
+      {/* オーバーレイ */}
+      {showOverlay && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+          <button
+            className="absolute top-4 right-4 btn btn-circle btn-sm btn-ghost text-white text-xl"
+            onClick={toggleOverlay}
+            aria-label="Close overlay"
+          >
+            ✕
+          </button>
+          <Image
+            src={attachment.fileUrl}
+            alt="拡大画像"
+            loader={imageLoader}
+            unoptimized
+            width={attachment.width}
+            height={attachment.height}
+            className="max-w-screen lg:max-w-[90vw] max-h-[85vh] object-contain shadow-lg"
+          />
+        </div>
+      )}
+    </>
   )
 }

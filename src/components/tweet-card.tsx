@@ -76,8 +76,8 @@ export default function TweetCard({ tweet, user, attachments, isRetweet = false,
                 { formatDistanceToNow(new Date(tweet.createdAt)) }
               </p>
             </div>
-            <div className="mb-4 grow">
-              <p className="whitespace-pre-wrap wrap-anywhere overflow-hidden text-clip pr-2">
+            <div className="mb-4 grow pr-4 lg:pr-2">
+              <p className="whitespace-pre-wrap wrap-anywhere overflow-hidden text-clip">
                 <TweetText textContent={tweet.textContent} />
               </p>
               { attachments && (

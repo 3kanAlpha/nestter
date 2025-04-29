@@ -108,7 +108,7 @@ export async function uploadUserAvatar(avatar: Uint8Array, fileKey: string, oldU
   return null;
 }
 
-export async function uploadTweetAttachment(attachment: ArrayBuffer, parentTweetId: number): Promise<boolean> {
+export async function uploadTweetAttachment(attachment: ArrayBuffer, parentTweetId: number, isSpoiler = false): Promise<boolean> {
   const session = await auth();
   if (!session || !session.user.screenName) {
     return false;
@@ -141,6 +141,7 @@ export async function uploadTweetAttachment(attachment: ArrayBuffer, parentTweet
       mimeType: "image/jpeg",
       imageWidth: width,
       imageHeight: height,
+      isSpoiler: isSpoiler,
     }
 
     const row = await db.insert(tweetAttachments).values(reqBody).returning({ newAttachmentId: tweetAttachments.id });

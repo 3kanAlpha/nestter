@@ -1,12 +1,18 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useState, useEffect } from "react";
 import Form from 'next/form';
 import { insertTweet } from "@/app/action/tweet";
 
 export default function TweetForm() {
   const [state, action, pending] = useActionState(insertTweet, undefined);
   const [content, setContent] = useState('');
+  const [file, setFile] = useState('');
+  const [hasImage, setHasImage] = useState(false);
+
+  useEffect(() => {
+    setHasImage(file.length > 0);
+  }, [file]);
 
   return (
     <div className="w-[90vw] lg:w-full">
@@ -28,7 +34,18 @@ export default function TweetForm() {
           name="attachments"
           className="file-input file-input-ghost w-full mt-2"
           accept="image/*"
+          value={file}
+          onChange={(e)=>setFile(e.target.value)}
         />
+        <div className="flex flex-row items-center gap-2 mt-2">
+          <input
+            type="checkbox"
+            name="isSpoiler"
+            className="checkbox checkbox-sm"
+            disabled={!hasImage}
+          />
+          <p className="text-sm">Mark as Spoiler</p>
+        </div>
         { state?.status === "error" && (
           <p className="text-sm text-error mt-2">ツイートの投稿に失敗しました：<br />{ state.message }</p>
         ) }
