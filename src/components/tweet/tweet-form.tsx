@@ -1,42 +1,71 @@
 "use client";
 
-import { useActionState, useState, useEffect } from "react";
+import { useActionState, useState, useEffect, useRef } from "react";
 import Form from 'next/form';
 import { insertTweet } from "@/app/action/tweet";
+import { getStringLength } from "@/utils/string-util";
+import { TWEET_TETX_MAX_LENGTH } from "@/consts/tweet";
 
 export default function TweetForm() {
   const [state, action, pending] = useActionState(insertTweet, undefined);
-  const [content, setContent] = useState('');
-  const [file, setFile] = useState('');
+  const [content, setContent] = useState("");
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [fileName, setFileName] = useState("");
   const [hasImage, setHasImage] = useState(false);
+  const canSubmit = (content.length > 0 || fileName.length > 0);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFileName(file.name);
+    } else {
+      setFileName("");
+    }
+  };
+
+  const resetFileInput = () => {
+    if (fileInputRef.current?.value) {
+      fileInputRef.current.value = "";
+    }
+    setFileName("");
+  };
 
   useEffect(() => {
-    setHasImage(file.length > 0);
-  }, [file]);
+    setHasImage(fileName.length > 0);
+  }, [fileName]);
 
   return (
     <div className="w-[90vw] lg:w-full">
       { JSON.stringify(state) && null }
       <Form action={action} className="w-full">
         <textarea
-          id="tweet-text-content"
           name="textContent"
           value={content}
           className="textarea textarea-lg textarea-ghost w-full h-36"
           placeholder="今なにしてる？"
-          required
-          maxLength={280}
+          maxLength={400}
           autoFocus
           onChange={(e)=>setContent(e.target.value)}
         ></textarea>
-        <input
-          type="file"
-          name="attachments"
-          className="file-input file-input-ghost w-full mt-2"
-          accept="image/*"
-          value={file}
-          onChange={(e)=>setFile(e.target.value)}
-        />
+        <div className="flex flex-row items-center gap-2 w-full mt-2">
+          <input
+            type="file"
+            name="attachments"
+            className="file-input file-input-ghost grow w-full"
+            accept="image/*"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+          />
+          <button
+            type="button"
+            className="btn btn-sm btn-circle btn-ghost"
+            onClick={resetFileInput}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
         <div className="flex flex-row items-center gap-2 mt-2">
           <input
             type="checkbox"
@@ -52,9 +81,9 @@ export default function TweetForm() {
 
         <div className="w-full flex flex-row justify-end items-center gap-4 mt-4">
           <div>
-            <p className="text-gray-500">{content.length} / 280</p>
+            <p className="text-gray-500">{getStringLength(content)} / {TWEET_TETX_MAX_LENGTH}</p>
           </div>
-          <button className="btn btn-primary" type="submit" disabled={pending}>
+          <button className="btn btn-primary" type="submit" disabled={pending || !canSubmit}>
             { pending ? <LoadingContent /> : "Tweet"}
           </button>
         </div>

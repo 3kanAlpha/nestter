@@ -1,13 +1,13 @@
 "use client";
+import { useState } from "react";
 import Link from "next/link";
 import TweetForm from "@/components/tweet/tweet-form";
 
 export default function TweetButton() {
+  const [formKey, setFormKey] = useState(0);
+
   function handleClick() {
-    const t = document.querySelector('textarea#tweet-text-content');
-    if (t) {
-      t.value = "";
-    }
+    setFormKey(formKey + 1); // モーダルを開くたびにフォームを初期状態に戻す
     document.querySelector('dialog#tweet-form-dialog')!.showModal();
   }
 
@@ -43,7 +43,7 @@ export default function TweetButton() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
             </svg>
           </button>
-          <TweetForm />
+          <TweetForm key={formKey} />
         </div>
       </dialog>
     </div>

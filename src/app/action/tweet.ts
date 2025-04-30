@@ -9,6 +9,7 @@ import { db } from "@/db/client";
 import { tweets, users, tweetAttachments, favorites, InsertTweet } from "@/db/schema";
 import { getStringLength } from "@/utils/string-util";
 import { uploadTweetAttachment } from './image';
+import { TWEET_TETX_MAX_LENGTH } from '@/consts/tweet';
 
 type SearchOptions = {
   q?: string;
@@ -181,15 +182,10 @@ export async function insertTweet(prev: any, formData: FormData) {
   const sesUserId = Number(session.user.id);
 
   const content = (formData.get("textContent") as string).trim();
-  if (content.length === 0) {
+  if (getStringLength(content) > TWEET_TETX_MAX_LENGTH) {
     return {
       status: "error",
-      message: "ツイートの内容を空にすることはできません",
-    }
-  } else if (getStringLength(content) > 280) {
-    return {
-      status: "error",
-      message: "ツイートは280文字以下である必要があります",
+      message: `ツイートは${TWEET_TETX_MAX_LENGTH}文字以下である必要があります`,
     }
   }
 
@@ -198,6 +194,14 @@ export async function insertTweet(prev: any, formData: FormData) {
     return {
       status: "error",
       message: "画像の最大サイズは5MiBです",
+    };
+  }
+
+  // テキストも画像も無いツイートは作成不可
+  if (getStringLength(content) === 0 && attachments.size === 0) {
+    return {
+      status: "error",
+      message: "ツイートの内容を空にすることはできません",
     };
   }
 

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { isValidHashtag } from "@/utils/string-util";
+import { isValidHashtag, removeProtocol } from "@/utils/string-util";
 
 type Props = {
   textContent: string;
@@ -11,7 +11,7 @@ export default function TweetText({ textContent }: Props) {
     if (/^https?:\/\/[\w/:%#\$&\?\(\)~\.=\+\-]+$/.test(part)) {
       return (
         <a key={i} href={part} className="text-blue-500 hover:underline wrap-anywhere" target="_blank" rel="noopener noreferrer">
-          {part}
+          {removeProtocol(part)}
         </a>
       );
     }

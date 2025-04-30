@@ -1,4 +1,4 @@
-import { pgTable, serial, integer, varchar, text, bigint, foreignKey, check, timestamp, jsonb, boolean, unique, primaryKey } from "drizzle-orm/pg-core"
+import { pgTable, serial, integer, varchar, text, bigint, foreignKey, check, timestamp, boolean, unique, primaryKey } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 
@@ -26,7 +26,6 @@ export const tweets = pgTable("tweets", {
 	favoriteCount: integer("favorite_count").default(0).notNull(),
 	retweetCount: integer("retweet_count").default(0).notNull(),
 	replyTo: integer("reply_to"),
-	attachments: jsonb(),
 	userId: integer("user_id").notNull(),
 }, (table) => [
 	foreignKey({
@@ -34,7 +33,7 @@ export const tweets = pgTable("tweets", {
 			foreignColumns: [users.id],
 			name: "user_id_fkey"
 		}).onDelete("cascade"),
-	check("text_max_length", sql`length(text_content) <= 280`),
+	check("text_max_length", sql`length(text_content) <= 400`),
 ]);
 
 export const tweetAttachments = pgTable("tweet_attachments", {
