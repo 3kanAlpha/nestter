@@ -52,7 +52,7 @@ export default function TweetForm() {
             type="file"
             name="attachments"
             className="file-input file-input-ghost grow w-full"
-            accept="image/*"
+            accept="image/jpeg,image/png"
             ref={fileInputRef}
             onChange={handleFileChange}
           />
