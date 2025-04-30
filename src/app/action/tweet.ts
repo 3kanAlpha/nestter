@@ -189,7 +189,7 @@ export async function insertTweet(prev: any, formData: FormData) {
   }
 
   const attachments = formData.get("attachments") as File;
-  if (!attachments.type.startsWith("image/")) {
+  if (attachments.size > 0 && !attachments.type.startsWith("image/")) {
     return {
       status: "error",
       message: "ツイートに添付できるファイル形式は画像のみ対応しています",
