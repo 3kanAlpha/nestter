@@ -44,7 +44,7 @@ async function resizeUserAvatar(bytes: Uint8Array): Promise<Uint8Array | null> {
 }
 
 /** 画像を長辺が最大2000pxとなるように変形してwebp形式に変換する */
-async function resizeImage(buf: ArrayBuffer): Promise<[Uint8Array | null, number, number]> {
+async function resizeImage(buf: ArrayBuffer): Promise<[Uint8Array, number, number]> {
   const bytes = new Uint8Array(buf);
   const image = PhotonImage.new_from_byteslice(bytes);
   const width = image.get_width();
@@ -59,24 +59,18 @@ async function resizeImage(buf: ArrayBuffer): Promise<[Uint8Array | null, number
   const dr = longSide / 2000;
   const nw = Math.trunc(width / dr);
   const nh = Math.trunc(height / dr);
-  try {
-    const outImage = resize(
-      image,
-      nw,
-      nh,
-      SamplingFilter.Lanczos3,
-    )
-    const outBytes = outImage.get_bytes_jpeg(85);
+  const outImage = resize(
+    image,
+    nw,
+    nh,
+    SamplingFilter.Lanczos3,
+  )
+  const outBytes = outImage.get_bytes_jpeg(85);
 
-    image.free();
-    outImage.free();
-    return [outBytes, nw, nh];
-  } catch (error) {
-    console.error(error);
-  }
   // free memory
   image.free();
-  return [null, 0, 0];
+  outImage.free();
+  return [outBytes, nw, nh];
 }
 
 /** ユーザーのアイコン画像をR2にアップロードする */
@@ -121,9 +115,6 @@ export async function uploadTweetAttachment(attachment: ArrayBuffer, parentTweet
   }
 
   const [resizedBytes, width, height] = await resizeImage(attachment);
-  if (!resizedBytes) {
-    return false;
-  }
 
   const hash = await calcDigestFromUint8Array(resizedBytes);
   const p1 = hash.substring(0, 2);
