@@ -1,6 +1,5 @@
 "use server";
 
-import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { getTableColumns, aliasedTable, eq, desc, lt, gt, lte, gte, ilike, and, sql } from "drizzle-orm";
 
@@ -190,6 +189,12 @@ export async function insertTweet(prev: any, formData: FormData) {
   }
 
   const attachments = formData.get("attachments") as File;
+  if (!attachments.type.startsWith("image/")) {
+    return {
+      status: "error",
+      message: "ツイートに添付できるファイル形式は画像のみ対応しています",
+    };
+  }
   if (attachments.size > 5 * 1024 * 1024) {
     return {
       status: "error",
@@ -227,6 +232,7 @@ export async function insertTweet(prev: any, formData: FormData) {
 
     const r = await uploadTweetAttachment(arrayBuf, parentTweetId, isSpoiler);
     if (!r) {
+      await deleteTweet(parentTweetId);
       return {
         status: "error",
         message: "添付ファイルのアップロードに失敗しました",
@@ -234,11 +240,10 @@ export async function insertTweet(prev: any, formData: FormData) {
     }
   }
 
-  revalidatePath("/");
   redirect("/");
 }
 
-export async function deleteTweet(tweetId: number, currentPath: string) {
+export async function deleteTweet(tweetId: number, currentPath?: string) {
   const session = await auth();
   if (!session || !session.user.screenName) {
     return {
@@ -252,6 +257,8 @@ export async function deleteTweet(tweetId: number, currentPath: string) {
 
   if (row.length > 0) {
     console.log(`Deleted tweet #${tweetId}`)
-    revalidatePath(currentPath);
+    if (currentPath) {
+      redirect(currentPath);
+    }
   }
 }
