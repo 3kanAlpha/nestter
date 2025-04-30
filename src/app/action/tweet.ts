@@ -227,6 +227,7 @@ export async function insertTweet(prev: any, formData: FormData) {
 
     const r = await uploadTweetAttachment(arrayBuf, parentTweetId, isSpoiler);
     if (!r) {
+      await deleteTweet(parentTweetId, "");
       return {
         status: "error",
         message: "添付ファイルのアップロードに失敗しました",
