@@ -9,11 +9,11 @@ export default async function Header() {
 
   return (
     <div className="w-screen bg-base-100 dark:bg-gray-800 shadow-sm">
-      <div className="navbar max-w-5xl mx-auto px-2 xl:px-0">
+      <div className="navbar w-full lg:max-w-5xl mx-auto">
         <div className="flex-1">
           <Link href="/" className="btn btn-ghost text-xl">Nestter</Link>
         </div>
-        <div className="flex-none">
+        <div className="flex-none w-fit px-2">
           { session?.user.screenName ? <ProfileMenu avatarUrl={session.user.avatarUrl} screenName={session?.user.screenName} /> : <LogInMenu /> }
         </div>
       </div>
