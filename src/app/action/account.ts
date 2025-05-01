@@ -8,9 +8,10 @@ import { eq } from "drizzle-orm";
 import { auth } from "@/auth";
 import { db } from "@/db/client";
 import { users } from "@/db/schema";
-import { uploadUserAvatar } from './image';
+import { uploadTempImage } from './image';
 import { getStringLength } from "@/utils/string-util";
-import { calcDigestFromBuffer, calcDigest } from '@/utils/hash-util';
+import { calcDigest } from '@/utils/hash-util';
+import { invokeUploadAvatar } from './lambda';
 
 /** アカウントの初期設定をする */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -161,20 +162,24 @@ export async function updatePublicProfile(prev: any, formData: FormData) {
       };
     }
     const arrayBuf = await avatarContent.arrayBuffer();
-    const hash = await calcDigestFromBuffer(arrayBuf);
-    const bytes = new Uint8Array(arrayBuf);
 
-    const p1 = hash.substring(0, 2);
-    const p2 = hash.substring(2, 4);
-    const fileKey = `icon/${p1}/${p2}/${hash}.webp`;
-    const r = await uploadUserAvatar(bytes, fileKey, session.user.avatarUrl);
-    if (!r) {
+    const tempKey = await uploadTempImage(arrayBuf, avatarContent.name);
+    if (tempKey) {
+      const r = await invokeUploadAvatar(tempKey, session.user.avatarUrl ?? "");
+      if (r) {
+        avatarUrl = r;
+      } else {
+        return {
+          status: "error",
+          message: "画像の変換に失敗しました",
+        };
+      }
+    } else {
       return {
         status: "error",
         message: "画像のアップロードに失敗しました",
       };
     }
-    avatarUrl = r;
   }
 
   const reqBody = {

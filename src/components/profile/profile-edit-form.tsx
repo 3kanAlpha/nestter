@@ -24,7 +24,7 @@ export default function ProfileEditForm({ displayName, bio, location, website }:
             name="avatarImage"
             type="file"
             className="file-input w-full"
-            accept="image/*"
+            accept="image/jpeg,image/png,image/gif"
           />
         </fieldset>
         <fieldset className="fieldset">

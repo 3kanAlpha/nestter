@@ -23,7 +23,14 @@ export default async function EditProfile({ params }: Props) {
         <div tabIndex={0} className="collapse collapse-arrow bg-base-100 border-base-300 border mb-4">
           <div className="collapse-title font-semibold">画像アップロード時の注意</div>
           <div className="collapse-content text-sm">
-            アイコンとしてアップロードする画像は短辺が<span className="font-semibold">128px以上</span>である必要があります。また、正方形ではない画像はアップロード時に正方形に変形されてしまうため、ご注意ください。
+            <p>アイコンとしてアップロードする画像は以下の条件を満たす必要があります。</p>
+
+            <ul className="list-disc pl-4 my-2">
+              <li>短辺が<span className="font-semibold">128px以上</span></li>
+              <li>サイズが5MiB以下</li>
+            </ul>
+            
+            <p>正方形ではない画像はアップロード時に正方形に変形されてしまうため、ご注意ください。</p>
           </div>
         </div>
         <ProfileEditForm displayName={user.displayName!} bio={user.bio} location={user.location} website={user.website} avatarUrl={user.avatarUrl} />

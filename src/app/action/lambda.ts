@@ -28,3 +28,28 @@ export async function invokeUploadImage(fileKey: string, parentTweetId: number, 
 
   return response.ok;
 }
+
+export async function invokeUploadAvatar(fileKey: string, oldFileUrl: string) {
+  const session = await auth();
+  if (!session || !session.user.screenName) {
+    return null;
+  }
+
+  const event = {
+    imageType: "avatar",
+    fileKey: fileKey,
+    oldFileUrl: oldFileUrl,
+  }
+
+  const response = await lambdaClient.fetch(`${process.env.LAMBDA_UPLOAD_IMAGE_URL}`, {
+    body: JSON.stringify(event),
+  });
+
+  const text = await response.text();
+  if (!response.ok) {
+    console.error(text);
+    return null;
+  }
+
+  return text;
+}
