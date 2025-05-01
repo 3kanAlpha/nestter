@@ -7,7 +7,8 @@ import { auth } from "@/auth";
 import { db } from "@/db/client";
 import { tweets, users, tweetAttachments, favorites, InsertTweet } from "@/db/schema";
 import { getStringLength } from "@/utils/string-util";
-import { uploadTweetAttachment } from './image';
+import { uploadTempImage } from './image';
+import { invokeUploadImage } from './lambda';
 import { TWEET_TETX_MAX_LENGTH } from '@/consts/tweet';
 
 type SearchOptions = {
@@ -230,8 +231,17 @@ export async function insertTweet(prev: any, formData: FormData) {
     const parentTweetId = row[0].newTweetId;
     const arrayBuf = await attachments.arrayBuffer();
 
-    const r = await uploadTweetAttachment(arrayBuf, parentTweetId, isSpoiler);
-    if (!r) {
+    const tempKey = await uploadTempImage(arrayBuf, attachments.name);
+    if (tempKey) {
+      const r = await invokeUploadImage(tempKey, parentTweetId, isSpoiler);
+      if (!r) {
+        await deleteTweet(parentTweetId);
+        return {
+          status: "error",
+          message: "画像の変換に失敗しました（画像が大きすぎる可能性があります）",
+        }
+      }
+    } else {
       await deleteTweet(parentTweetId);
       return {
         status: "error",

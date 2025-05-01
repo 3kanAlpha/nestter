@@ -19,6 +19,21 @@ async function deleteFile(fileKey: string) {
   });
 }
 
+async function uploadFile(fileKey: string, content: Uint8Array): Promise<boolean> {
+  const fileUrl = `${R2_URL}/${BUCKET_NAME}/${fileKey}`;
+
+  const res = await client.fetch(fileUrl, {
+    method: "PUT",
+    headers: {
+      host: new URL(R2_URL).host,
+      "Content-Length": content.length.toString(),
+    },
+    body: content,
+  });
+
+  return res.ok;
+}
+
 /** 画像を最大長辺400pxに変形してwebp形式に変換する */
 async function resizeUserAvatar(bytes: Uint8Array): Promise<Uint8Array | null> {
   const image = PhotonImage.new_from_byteslice(bytes);
@@ -106,6 +121,25 @@ export async function uploadUserAvatar(avatar: Uint8Array, fileKey: string, oldU
   }
 
   return null;
+}
+
+export async function uploadTempImage(arrayBuf: ArrayBuffer, fileName: string) {
+  const session = await auth();
+  if (!session || !session.user.screenName) {
+    return null;
+  }
+
+  const fileExt = fileName.split(".").pop();
+  if (!fileExt) {
+    return null;
+  }
+
+  const fileNameBase = Math.random().toString(36).slice(-8);
+  const fileKey = `temp/${fileNameBase}.${fileExt}`;
+  const bytes = new Uint8Array(arrayBuf);
+
+  const uploaded = await uploadFile(fileKey, bytes);
+  return uploaded ? fileKey : null;
 }
 
 export async function uploadTweetAttachment(attachment: ArrayBuffer, parentTweetId: number, isSpoiler = false): Promise<boolean> {
