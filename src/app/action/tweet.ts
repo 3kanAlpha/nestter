@@ -9,7 +9,7 @@ import { tweets, users, tweetAttachments, favorites, InsertTweet } from "@/db/sc
 import { getStringLength } from "@/utils/string-util";
 import { uploadTempImage } from './image';
 import { invokeUploadImage } from './lambda';
-import { TWEET_TETX_MAX_LENGTH } from '@/consts/tweet';
+import { TWEET_TETX_MAX_LENGTH, TWEET_IMAGE_MAX_SIZE_MB } from '@/consts/tweet';
 
 type SearchOptions = {
   q?: string;
@@ -202,10 +202,11 @@ export async function insertTweet(prev: any, formData: FormData) {
       message: "ツイートに添付できるファイル形式は画像のみ対応しています",
     };
   }
-  if (attachments.size > 5 * 1024 * 1024) {
+  if (attachments.size > TWEET_IMAGE_MAX_SIZE_MB * 1024 * 1024) {
+    const fileSizeMb = attachments.size / (1024 * 1024);
     return {
       status: "error",
-      message: "画像の最大サイズは5MiBです",
+      message: `画像の最大サイズは${TWEET_IMAGE_MAX_SIZE_MB}MiBです (${fileSizeMb.toFixed(2)} MiB)`,
     };
   }
 
