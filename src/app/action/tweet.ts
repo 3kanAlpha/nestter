@@ -187,7 +187,8 @@ export async function insertTweet(prev: any, formData: FormData) {
 
   const sesUserId = Number(session.user.id);
 
-  const content = (formData.get("textContent") as string).trim();
+  const contentCRLF = (formData.get("textContent") as string).trim();
+  const content = contentCRLF.replaceAll("\r\n", "\n"); // textareaの値は送信時CRLFに変換される
   if (getStringLength(content) > TWEET_TETX_MAX_LENGTH) {
     return {
       status: "error",
