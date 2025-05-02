@@ -16,7 +16,7 @@ type Props = {
 }
 
 export default function SingleImage({ attachment }: Props) {
-  const aspect = `aspect-${attachment.width}/${attachment.height}`;
+  const ar = attachment.width / attachment.height;
   const [hideImage, setHideImage] = useState(attachment.isSpoiler);
   const [showOverlay, setShowOverlay] = useState(false);
 
@@ -36,17 +36,19 @@ export default function SingleImage({ attachment }: Props) {
 
   return (
     <>
-      <div className={`stack w-full ${aspect}`}>
+      <div className={`stack w-full`} style={{
+        aspectRatio: ar < 0.5 ? 0.5 : ar,
+      }}>
         { hideImage && (
           <div
             className="text-primary-content grid place-content-center"
             onClick={showImage}
           >
-            クリックして表示
+            <span className="text-sm pointer-events-none">クリックして表示</span>
           </div>
         ) }
         <Image
-          className={`rounded-lg ${hideImage ? "blur-md brightness-50" : undefined}`}
+          className={`rounded-lg object-cover h-full ${hideImage ? "blur-md brightness-50" : undefined}`}
           src={attachment.fileUrl}
           alt="Image"
           loader={imageLoader}
