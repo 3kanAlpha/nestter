@@ -1,10 +1,29 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import TweetForm from "@/components/tweet/tweet-form";
 
 export default function TweetButton() {
   const [formKey, setFormKey] = useState(0);
+  const handleShortcutKey = useCallback(handleClick, [formKey]);
+
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      // フォーカスがinputやtextareaなどにあるときは無視
+      const tag = (event.target as HTMLElement).tagName.toLowerCase();
+      if (tag === "input" || tag === "textarea" || tag === "select") return;
+  
+      if (event.key === "n" || event.key === "N") {
+        event.preventDefault(); // デフォルト動作の抑制（必要に応じて）
+        handleShortcutKey();
+      }
+    }
+  
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [handleShortcutKey]);
 
   function handleClick() {
     setFormKey(formKey + 1); // モーダルを開くたびにフォームを初期状態に戻す

@@ -14,6 +14,28 @@ export default function TweetForm() {
   const [hasImage, setHasImage] = useState(false);
   const canSubmit = (content.length > 0 || fileName.length > 0);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        const active = document.activeElement;
+        // textarea にフォーカスがあるときのみ送信
+        if (active && active.tagName.toLowerCase() === "textarea") {
+          e.preventDefault();
+          // 最も近い form を取得して submit
+          const form = active.closest("form");
+          if (form) {
+            (form as HTMLFormElement).requestSubmit();
+          }
+        }
+      }
+    };
+  
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
