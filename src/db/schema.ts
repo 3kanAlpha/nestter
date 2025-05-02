@@ -1,4 +1,4 @@
-import { pgTable, serial, integer, varchar, text, bigint, foreignKey, check, timestamp, boolean, unique, primaryKey } from "drizzle-orm/pg-core"
+import { pgTable, serial, integer, varchar, text, bigint, foreignKey, unique, check, timestamp, boolean, primaryKey } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 
@@ -19,21 +19,24 @@ export const accounts = pgTable("accounts", {
 	tokenType: text("token_type"),
 });
 
-export const tweets = pgTable("tweets", {
-	id: integer().primaryKey().generatedAlwaysAsIdentity({ name: "tweets_id_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 2147483647, cache: 1 }),
+export const comps = pgTable("comps", {
+	id: integer().primaryKey().generatedAlwaysAsIdentity({ name: "comps_id_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 2147483647, cache: 1 }),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
-	textContent: text("text_content").notNull(),
-	favoriteCount: integer("favorite_count").default(0).notNull(),
-	retweetCount: integer("retweet_count").default(0).notNull(),
-	replyTo: integer("reply_to"),
-	userId: integer("user_id").notNull(),
+	slug: text().notNull(),
+	name: text().notNull(),
+	gameTitle: text("game_title").notNull(),
+	songTitle: text("song_title").notNull(),
+	difficulty: text().notNull(),
+	closeAt: timestamp("close_at", { withTimezone: true, mode: 'string' }).notNull(),
+	createdUserId: integer("created_user_id").notNull(),
 }, (table) => [
 	foreignKey({
-			columns: [table.userId],
+			columns: [table.createdUserId],
 			foreignColumns: [users.id],
-			name: "user_id_fkey"
+			name: "created_user_id_fkey"
 		}).onDelete("cascade"),
-	check("text_max_length", sql`length(text_content) <= 400`),
+	unique("comps_slug_key").on(table.slug),
+	check("slug_max_length", sql`length(slug) <= 15`),
 ]);
 
 export const tweetAttachments = pgTable("tweet_attachments", {
@@ -49,7 +52,26 @@ export const tweetAttachments = pgTable("tweet_attachments", {
 			columns: [table.tweetId],
 			foreignColumns: [tweets.id],
 			name: "tweet_id_fkey"
-		}),
+		}).onDelete("cascade"),
+]);
+
+export const tweets = pgTable("tweets", {
+	id: integer().primaryKey().generatedAlwaysAsIdentity({ name: "tweets_id_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 2147483647, cache: 1 }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+	textContent: text("text_content").notNull(),
+	favoriteCount: integer("favorite_count").default(0).notNull(),
+	retweetCount: integer("retweet_count").default(0).notNull(),
+	replyTo: integer("reply_to"),
+	userId: integer("user_id").notNull(),
+	replyCount: integer("reply_count").default(0).notNull(),
+	isPending: boolean("is_pending").default(false).notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.userId],
+			foreignColumns: [users.id],
+			name: "user_id_fkey"
+		}).onDelete("cascade"),
+	check("text_max_length", sql`length(text_content) <= 400`),
 ]);
 
 export const sessions = pgTable("sessions", {

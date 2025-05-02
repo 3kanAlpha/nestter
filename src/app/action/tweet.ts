@@ -38,6 +38,7 @@ export async function searchTweetsB(minTweetId?: number, maxTweetId?: number, op
   if (options?.from) {
     searchCond.push(eq(users.screenName, options.from));
   }
+  searchCond.push(eq(tweets.isPending, false));
 
   const whereClause = and(...searchCond);
 
@@ -131,6 +132,7 @@ export async function searchFavedTweets(targetUserId: number, minTweetTimestamp?
   if (options?.from) {
     searchCond.push(eq(users.screenName, options.from));
   }
+  searchCond.push(eq(tweets.isPending, false));
 
   const whereClause = and(...searchCond);
 
@@ -167,6 +169,10 @@ export async function searchFavedTweets(targetUserId: number, minTweetTimestamp?
     .limit(20)
     .orderBy(desc(favorites.createdAt));
   return res;
+}
+
+async function updateIsPending(tweetId: number, newState: boolean) {
+  await db.update(tweets).set({ isPending: newState }).where(eq(tweets.id, tweetId));
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -217,6 +223,8 @@ export async function insertTweet(prev: any, formData: FormData) {
   const reqBody: InsertTweet = {
     textContent: content,
     userId: sesUserId,
+    // 画像つきツイートはファイルのアップロードが終わるまで表示されないようにする
+    isPending: (attachments.size > 0),
   }
 
   const row = await db.insert(tweets).values(reqBody).onConflictDoNothing().returning({ newTweetId: tweets.id });
@@ -241,6 +249,7 @@ export async function insertTweet(prev: any, formData: FormData) {
           message: "画像の変換に失敗しました（画像が大きすぎる可能性があります）",
         }
       }
+      await updateIsPending(parentTweetId, false);
     } else {
       await deleteTweet(parentTweetId);
       return {
