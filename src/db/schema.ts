@@ -94,6 +94,7 @@ export const users = pgTable("users", {
 	avatarUrl: text(),
 	website: text(),
 	location: text(),
+	accountLevel: integer().default(0).notNull(),
 }, (table) => [
 	unique("users_screen_name_key").on(table.screenName),
 	check("display_name_max_length", sql`length("displayName") <= 50`),

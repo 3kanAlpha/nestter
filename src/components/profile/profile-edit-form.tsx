@@ -1,7 +1,9 @@
 "use client";
-import { useActionState } from 'react';
+import { useActionState, useState } from 'react';
 import Form from 'next/form';
 import { updatePublicProfile } from "@/app/action/account";
+import { getStringLength } from '@/utils/string-util';
+import { ACCOUNT_BIO_MAX_LENGTH, ACCOUNT_DISPLAY_NAME_MAX_LENGTH } from '@/consts/account';
 
 type Props = {
   displayName: string;
@@ -13,6 +15,8 @@ type Props = {
 
 export default function ProfileEditForm({ displayName, bio, location, website }: Props) {
   const [state, action, pending] = useActionState(updatePublicProfile, undefined);
+  const [newDisplayName, setNewDisplayName] = useState(displayName);
+  const [newBio, setNewBio] = useState(bio ?? '');
 
   return (
     <div className="w-full">
@@ -34,18 +38,22 @@ export default function ProfileEditForm({ displayName, bio, location, website }:
             type="text"
             className="input w-full"
             required
-            maxLength={50}
-            defaultValue={displayName}
+            maxLength={120}
+            value={newDisplayName}
+            onChange={(e)=>setNewDisplayName(e.target.value)}
           />
+          <p className={`${getStringLength(newDisplayName) > ACCOUNT_DISPLAY_NAME_MAX_LENGTH ? "text-error" : "text-gray-500"} ml-auto`}>{ getStringLength(newDisplayName) } / { ACCOUNT_DISPLAY_NAME_MAX_LENGTH }</p>
         </fieldset>
         <fieldset className="fieldset">
           <legend className="fieldset-legend">自己紹介</legend>
           <textarea
             name="bio"
             className="textarea w-full"
-            maxLength={160}
-            defaultValue={bio}
+            maxLength={400}
+            value={newBio}
+            onChange={(e)=>setNewBio(e.target.value)}
           />
+          <p className={`${getStringLength(newBio) > ACCOUNT_BIO_MAX_LENGTH ? "text-error" : "text-gray-500"} ml-auto`}>{ getStringLength(newBio) } / { ACCOUNT_BIO_MAX_LENGTH }</p>
         </fieldset>
         <fieldset className="fieldset">
           <legend className="fieldset-legend">場所</legend>

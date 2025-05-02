@@ -11,6 +11,7 @@ import { users } from "@/db/schema";
 import { uploadTempImage } from './image';
 import { getStringLength } from "@/utils/string-util";
 import { calcDigest } from '@/utils/hash-util';
+import { ACCOUNT_BIO_MAX_LENGTH, ACCOUNT_DISPLAY_NAME_MAX_LENGTH } from '@/consts/account';
 import { invokeUploadAvatar } from './lambda';
 
 /** アカウントの初期設定をする */
@@ -30,12 +31,12 @@ export async function initializeAccount(prev: any, formData: FormData) {
   if (screenName.length > 15) {
     return {
       status: "error",
-      message: "screen name is too long",
+      message: "アカウントIDは15文字以下である必要があります",
     }
-  } else if (screenName.length === 0) {
+  } else if (screenName.length < 3) {
     return {
       status: "error",
-      message: "screen name cannot be empty",
+      message: "アカウントIDは3文字以上である必要があります",
     }
   }
 
@@ -43,20 +44,28 @@ export async function initializeAccount(prev: any, formData: FormData) {
   if (!screenNamePattern.test(screenName)) {
     return {
       status: "error",
-      message: "screen name is malformed",
+      message: "アカウントIDに使用できない文字列が含まれています",
+    }
+  }
+
+  const canUseName = await isScreenNameAvailable(screenName);
+  if (!canUseName) {
+    return {
+      status: "error",
+      message: "このアカウントIDは既に使用されています",
     }
   }
 
   const displayName = (formData.get("displayName") as string).trim();
-  if (getStringLength(displayName) > 50) {
+  if (getStringLength(displayName) > ACCOUNT_DISPLAY_NAME_MAX_LENGTH) {
     return {
       status: "error",
-      message: "display name is too long",
+      message: "表示名は50文字以下である必要があります",
     }
   } else if (getStringLength(displayName) === 0) {
     return {
       status: "error",
-      message: "display name cannot be empty",
+      message: "表示名を空にすることはできません",
     }
   }
 
@@ -75,11 +84,11 @@ export async function initializeAccount(prev: any, formData: FormData) {
     screenName: screenName,
     displayName: displayName,
     avatarUrl: avatarUrl ? avatarUrl : null,
+    accountLevel: 1,
   }
 
   await db.update(users).set(reqBody).where(eq(users.id, sesUserId));
 
-  revalidatePath("/");
   redirect("/");
 }
 
@@ -93,6 +102,7 @@ async function _getUserByScreenName(screenName: string) {
     bio: users.bio,
     website: users.website,
     location: users.location,
+    accountLevel: users.accountLevel,
   }).from(users).where(eq(users.screenName, screenName)).limit(1);
   return res.length > 0 ? res[0] : null;
 }
@@ -120,7 +130,7 @@ export async function updatePublicProfile(prev: any, formData: FormData) {
   const sesUserId = Number(session.user.id);
 
   const displayName = (formData.get("displayName") as string).trim();
-  if (getStringLength(displayName) > 50) {
+  if (getStringLength(displayName) > ACCOUNT_DISPLAY_NAME_MAX_LENGTH) {
     return {
       status: "error",
       message: "表示名は50文字以下である必要があります",
@@ -133,7 +143,7 @@ export async function updatePublicProfile(prev: any, formData: FormData) {
   }
 
   const bio = (formData.get("bio") as string).trim();
-  if (bio.length > 160) {
+  if (getStringLength(bio) > ACCOUNT_BIO_MAX_LENGTH) {
     return {
       status: "error",
       message: "自己紹介は160文字以下である必要があります",

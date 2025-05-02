@@ -6,6 +6,7 @@ import { defaultAvatarUrl } from '@/consts/account';
 import { getUserByScreenName } from "@/app/action/account";
 import TweetList from '@/components/tweet-list';
 import LikedTweetList from '@/components/tweet/liked-tweet-list';
+import AccountBadge from '@/components/profile/account-badge';
 import { formatJoinedDate } from "@/utils/date-util";
 import { removeProtocol } from '@/utils/string-util';
 
@@ -79,9 +80,10 @@ export default async function Profile({ params }: Props) {
               )}
             </div>
           </div>
-          <h2 className="mt-4">
-            <span className="text-2xl font-semibold">{ user.displayName }</span>
-          </h2>
+          <div className="mt-4 flex flex-row items-center gap-1">
+            <span className="text-xl font-bold">{ user.displayName }</span>
+            <AccountBadge accountLevel={user.accountLevel} />
+          </div>
           <p className="text-gray-500">@{ user.screenName }</p>
           <p className="mt-2">
             { user.bio }

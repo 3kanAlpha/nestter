@@ -17,6 +17,7 @@ declare module "next-auth" {
       avatarUrl?: string
       website?: string
       location?: string
+      accountLevel: number
     } & DefaultSession["user"]
   }
 }
