@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useDebounce } from 'use-debounce';
 import { setFavoriteState } from "@/app/action/favorite";
+import { PREVENT_NAVIGATION_CLASS } from "@/consts/layout";
 
 type Props = {
   tweetId: number;
@@ -38,7 +39,7 @@ export default function FavoriteButton({ tweetId, favCount, isFaved, auth }: Pro
 
   return (
     <div
-      className={`flex flex-row items-center gap-1 w-6 ${isLocalFaved ? "text-red-500" : ""}`}
+      className={`flex flex-row items-center gap-1 w-6 ${isLocalFaved ? "text-red-500" : ""} ${PREVENT_NAVIGATION_CLASS}`}
       onClick={auth ? handleClick : undefined}
     >
       { isLocalFaved ? <HeartSolid /> : <HeartOutline /> }

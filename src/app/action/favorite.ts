@@ -1,10 +1,10 @@
 "use server";
 
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and, sql, desc } from "drizzle-orm";
 
 import { auth } from "@/auth";
 import { db } from "@/db/client";
-import { tweets, favorites, InsertFavorites } from "@/db/schema";
+import { tweets, favorites, InsertFavorites, users } from "@/db/schema";
 
 /** ツイートをいいねする */
 async function faveTweet(tweetId: number) {
@@ -52,4 +52,22 @@ export async function setFavoriteState(tweetId: number, newState: boolean) {
   } else if (isFaved && !newState) {
     await unfaveTweet(tweetId);
   }
+}
+
+/** 指定したIDのツイートをいいねしたユーザーを取得する */
+export async function getTweetLikedUsers(tweetId: number) {
+  const res = await db
+    .select({
+      userId: users.id,
+      screenName: users.screenName,
+      displayName: users.displayName,
+      avatarUrl: users.avatarUrl,
+      bio: users.bio,
+    })
+    .from(favorites)
+    .where(eq(favorites.tweetId, tweetId))
+    .innerJoin(users, eq(favorites.userId, users.id))
+    .limit(20)
+    .orderBy(desc(favorites.createdAt));
+  return res;
 }

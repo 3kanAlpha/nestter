@@ -8,6 +8,7 @@ import UserAvatar from "./header/user-avatar";
 import TweetText from "./tweet/tweet-text";
 import FavoriteButton from "./tweet/card/favorite-button";
 import { defaultAvatarUrl } from '@/consts/account';
+import { PREVENT_NAVIGATION_CLASS } from "@/consts/layout";
 import { deleteTweet } from "@/app/action/tweet";
 import type { SelectTweet } from "@/db/schema";
 
@@ -46,9 +47,24 @@ export default function TweetCard({ tweet, user, attachments, isRetweet = false,
     router.refresh(); // ページの表示を更新する
   }
 
+  function handleClickCard(e: React.MouseEvent<HTMLDivElement>) {
+    if (!(e.target instanceof Element)) return;
+    if (e.target.closest('a')) return;
+    if (e.target.classList.contains(PREVENT_NAVIGATION_CLASS)) return;
+    const parent = e.target.closest("div");
+    if (parent && parent.classList.contains(PREVENT_NAVIGATION_CLASS)) {
+      return;
+    }
+    router.push(`/post/${tweet.id}`);
+  }
+
   return (
     <>
-      <div className="card card-border bg-base-100 dark:bg-tw-body w-full p-3 join-item">
+      <div
+        className="card card-border bg-base-100 dark:bg-tw-body w-full p-3 join-item cursor-pointer"
+        onClick={handleClickCard}
+        tabIndex={0}
+      >
         { isRetweet && (
           <div className="flex flex-row items-center gap-1 text-gray-500 text-sm mb-1 pl-10">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="size-5">
@@ -110,7 +126,7 @@ export default function TweetCard({ tweet, user, attachments, isRetweet = false,
                 </svg>
               </div>
               {/* その他ツイート操作 */}
-              <div className="dropdown dropdown-end">
+              <div className={`dropdown dropdown-end ${PREVENT_NAVIGATION_CLASS}`}>
                 <div tabIndex={0} role="button">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
@@ -118,7 +134,16 @@ export default function TweetCard({ tweet, user, attachments, isRetweet = false,
                 </div>
                 <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-box z-1 w-42 mt-1 p-2 shadow-sm text-xs text-black dark:text-white">
                   { authUserId === tweet.userId && <DeleteTweetOption dialogId={dialogId} /> }
-                  <li><a>なにもない</a></li>
+                  <li>
+                    <Link href={`/post/${tweet.id}/reaction`}>
+                      <div className="flex flex-row items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-4">
+                          <path d="M18.375 2.25c-1.035 0-1.875.84-1.875 1.875v15.75c0 1.035.84 1.875 1.875 1.875h.75c1.035 0 1.875-.84 1.875-1.875V4.125c0-1.036-.84-1.875-1.875-1.875h-.75ZM9.75 8.625c0-1.036.84-1.875 1.875-1.875h.75c1.036 0 1.875.84 1.875 1.875v11.25c0 1.035-.84 1.875-1.875 1.875h-.75a1.875 1.875 0 0 1-1.875-1.875V8.625ZM3 13.125c0-1.036.84-1.875 1.875-1.875h.75c1.036 0 1.875.84 1.875 1.875v6.75c0 1.035-.84 1.875-1.875 1.875h-.75A1.875 1.875 0 0 1 3 19.875v-6.75Z" />
+                        </svg>
+                        ツイートの反応
+                      </div>
+                    </Link>
+                  </li>
                 </ul>
               </div>
             </div>

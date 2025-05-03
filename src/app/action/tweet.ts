@@ -1,5 +1,6 @@
 "use server";
 
+import { cache } from 'react';
 import { redirect } from 'next/navigation';
 import { getTableColumns, aliasedTable, eq, desc, lt, gt, lte, gte, ilike, and, sql } from "drizzle-orm";
 
@@ -16,6 +17,49 @@ type SearchOptions = {
   from?: string;
   searchFaved?: boolean;
 }
+
+/** 指定したIDのツイートを取得する */
+async function _getTweetById(tweetId: number) {
+  const session = await auth();
+  const rawUserId = Number(session?.user.id)
+  const sesUserId = Number.isFinite(rawUserId) ? rawUserId : 0;
+
+  const res = await db
+    .select({
+      tweet: {
+        ...getTableColumns(tweets),
+      },
+      user: {
+        id: users.id,
+        screenName: users.screenName,
+        displayName: users.displayName,
+        avatarUrl: users.avatarUrl,
+      },
+      attachment: {
+        id: tweetAttachments.id,
+        fileUrl: tweetAttachments.fileUrl,
+        mimeType: tweetAttachments.mimeType,
+        isSpoiler: tweetAttachments.isSpoiler,
+        width: tweetAttachments.imageWidth,
+        height: tweetAttachments.imageHeight,
+      },
+      engagement: {
+        isFaved: sql<boolean>`${favorites.userId} IS NOT NULL`.as('isFaved'),
+        favedTimestamp: favorites.createdAt,
+      }
+    })
+    .from(tweets)
+    .where(eq(tweets.id, tweetId))
+    .innerJoin(users, eq(tweets.userId, users.id))
+    .leftJoin(favorites, and(eq(tweets.id, favorites.tweetId), eq(favorites.userId, sesUserId)))
+    .leftJoin(tweetAttachments, eq(tweets.id, tweetAttachments.tweetId))
+    .limit(1)
+  
+    return res.length > 0 ? res[0] : null;
+}
+
+/** 指定したIDのツイートを取得する */
+export const getTweetById = cache(_getTweetById);
 
 export async function searchTweetsB(minTweetId?: number, maxTweetId?: number, options?: SearchOptions) {
   const session = await auth();
