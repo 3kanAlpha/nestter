@@ -4,7 +4,7 @@ import { useActionState, useState, useEffect, useRef } from "react";
 import Form from 'next/form';
 import { insertTweet } from "@/app/action/tweet";
 import { getStringLength } from "@/utils/string-util";
-import { TWEET_TETX_MAX_LENGTH } from "@/consts/tweet";
+import { TWEET_TEXT_MAX_LENGTH } from "@/consts/tweet";
 
 export default function TweetForm() {
   const [state, action, pending] = useActionState(insertTweet, undefined);
@@ -103,7 +103,7 @@ export default function TweetForm() {
 
         <div className="w-full flex flex-row justify-end items-center gap-4 mt-4">
           <div>
-            <p className="text-gray-500">{getStringLength(content)} / {TWEET_TETX_MAX_LENGTH}</p>
+            <p className={getStringLength(content) > TWEET_TEXT_MAX_LENGTH ? "text-error" : "text-gray-500"}>{getStringLength(content)} / {TWEET_TEXT_MAX_LENGTH}</p>
           </div>
           <button className="btn btn-primary" type="submit" disabled={pending || !canSubmit}>
             { pending ? <LoadingContent /> : "Tweet"}

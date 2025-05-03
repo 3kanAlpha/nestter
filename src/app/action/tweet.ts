@@ -9,7 +9,7 @@ import { tweets, users, tweetAttachments, favorites, InsertTweet } from "@/db/sc
 import { getStringLength } from "@/utils/string-util";
 import { uploadTempImage } from './image';
 import { invokeUploadImage } from './lambda';
-import { TWEET_TETX_MAX_LENGTH, TWEET_IMAGE_MAX_SIZE_MB } from '@/consts/tweet';
+import { TWEET_TEXT_MAX_LENGTH, TWEET_IMAGE_MAX_SIZE_MB } from '@/consts/tweet';
 
 type SearchOptions = {
   q?: string;
@@ -189,10 +189,10 @@ export async function insertTweet(prev: any, formData: FormData) {
 
   const contentCRLF = (formData.get("textContent") as string).trim();
   const content = contentCRLF.replaceAll("\r\n", "\n"); // textareaの値は送信時CRLFに変換される
-  if (getStringLength(content) > TWEET_TETX_MAX_LENGTH) {
+  if (getStringLength(content) > TWEET_TEXT_MAX_LENGTH) {
     return {
       status: "error",
-      message: `ツイートは${TWEET_TETX_MAX_LENGTH}文字以下である必要があります`,
+      message: `ツイートは${TWEET_TEXT_MAX_LENGTH}文字以下である必要があります`,
     }
   }
 
