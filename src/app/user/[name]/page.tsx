@@ -28,7 +28,7 @@ export async function generateMetadata(
     title: `${user.displayName} (@${user.screenName})`,
     description: user.bio,
     openGraph: {
-      title: `${user.displayName} (@${user.screenName})`,
+      title: `${user.displayName} (@${user.screenName}) on Nestter`,
       description: user.bio ?? undefined,
       url: `https://nest.mgcup.net/user/${user.screenName}`,
       siteName: "Nestter",

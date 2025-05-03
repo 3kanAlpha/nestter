@@ -1,5 +1,21 @@
+function getCharWidth(s: string): number {
+  const codePoint = s.codePointAt(0);
+  if (!codePoint) {
+    return 0;
+  }
+
+  if (codePoint <= 0x7f) {
+    // ASCII
+    return 1;
+  }
+  return 2;
+}
+
+/** 文字列の長さを計算する */
 export function getStringLength(text: string): number {
-  return [...text].length;
+  const codePoints = [...text];
+  const widthSum = codePoints.reduce((acc, value) => acc + getCharWidth(value), 0);
+  return widthSum;
 }
 
 export function removeProtocol(urlText: string): string {
