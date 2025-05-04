@@ -49,7 +49,7 @@ export default function TweetCard({ tweet, user, attachments, isRetweet = false,
 
   function handleClickCard(e: React.MouseEvent<HTMLDivElement>) {
     if (!(e.target instanceof Element)) return;
-    if (e.target.closest('a')) return;
+    if (e.target.closest('a') || e.target.closest('img') || e.target.closest('button')) return;
     if (e.target.classList.contains(PREVENT_NAVIGATION_CLASS)) return;
     const parent = e.target.closest("div");
     if (parent && parent.classList.contains(PREVENT_NAVIGATION_CLASS)) {
