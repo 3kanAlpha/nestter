@@ -6,38 +6,32 @@ import { formatDistanceToNow } from "date-fns";
 import SingleImage from "./tweet/single-image";
 import UserAvatar from "./header/user-avatar";
 import TweetText from "./tweet/tweet-text";
+import ReplyButton from "./tweet/card/reply-button";
 import FavoriteButton from "./tweet/card/favorite-button";
 import { defaultAvatarUrl } from '@/consts/account';
 import { PREVENT_NAVIGATION_CLASS } from "@/consts/layout";
+import { User, Attachment } from "@/types/tweet";
 import { deleteTweet } from "@/app/action/tweet";
 import type { SelectTweet } from "@/db/schema";
+import EmbedReplyCard from "./tweet/card/embed-reply-card";
 
-type User = {
-  id: number;
-  screenName: string | null;
-  displayName: string | null;
-  avatarUrl: string | null;
+type ReplyTweet = {
+  tweet: SelectTweet;
+  user: User;
+  attachments: Attachment[] | null;
 }
-
-type Attachments = {
-  id: number;
-  fileUrl: string;
-  mimeType: string | null;
-  isSpoiler: boolean;
-  width: number;
-  height: number;
-}[]
 
 type Props = {
   tweet: SelectTweet;
   user: User;
-  attachments: Attachments | null;
+  attachments: Attachment[] | null;
   isRetweet?: boolean;
   authUserId?: number;
   isFaved?: boolean;
+  reply?: ReplyTweet;
 }
 
-export default function TweetCard({ tweet, user, attachments, isRetweet = false, authUserId, isFaved = false }: Props) {
+export default function TweetCard({ tweet, user, attachments, isRetweet = false, authUserId, isFaved = false, reply }: Props) {
   const pathname = usePathname();
   const router = useRouter();
   const dialogId = `tweet-card-${tweet.id}-delete-confirm-dialog`;
@@ -95,6 +89,11 @@ export default function TweetCard({ tweet, user, attachments, isRetweet = false,
               </p>
             </div>
             <div className="mb-4 grow pr-2">
+              { reply && (
+                <div className="mt-1 mb-2">
+                  <EmbedReplyCard tweet={reply.tweet} user={reply.user} attachments={reply.attachments} />
+                </div>
+              ) }
               <p className="whitespace-pre-wrap wrap-anywhere overflow-hidden text-clip">
                 <TweetText textContent={tweet.textContent} />
               </p>
@@ -106,11 +105,14 @@ export default function TweetCard({ tweet, user, attachments, isRetweet = false,
             </div>
             <div className="flex flex-row justify-between w-[90%] text-gray-500">
               {/* リプライ */}
-              <div className="flex flex-row items-center gap-1 w-6">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 0 1-.923 1.785A5.969 5.969 0 0 0 6 21c1.282 0 2.47-.402 3.445-1.087.81.22 1.668.337 2.555.337Z" />
-                </svg>
-              </div>
+              <ReplyButton
+                replyTo={{
+                  id: tweet.id,
+                  screenName: user.screenName ?? "xxx",
+                }}
+                replyCount={tweet.replyCount}
+                auth={authUserId !== undefined}
+              />
               {/* リツイート */}
               <div className="flex flex-row items-center gap-1 w-6">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4">

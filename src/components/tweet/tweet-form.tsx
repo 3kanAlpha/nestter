@@ -6,7 +6,14 @@ import { insertTweet } from "@/app/action/tweet";
 import { getStringLength } from "@/utils/string-util";
 import { TWEET_TEXT_MAX_LENGTH } from "@/consts/tweet";
 
-export default function TweetForm() {
+type Props = {
+  replyTo?: {
+    id: number;
+    screenName: string;
+  };
+}
+
+export default function TweetForm({ replyTo }: Props) {
   const [state, action, pending] = useActionState(insertTweet, undefined);
   const [content, setContent] = useState("");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -59,12 +66,22 @@ export default function TweetForm() {
   return (
     <div className="w-[90vw] lg:w-full">
       { JSON.stringify(state) && null }
+      { replyTo && (
+        <div className="mb-2">
+          <p className="text-gray-500 text-sm">返信先: <span className="text-blue-500">@{ replyTo.screenName }</span>さん</p>
+        </div>
+      ) }
       <Form action={action} className="w-full">
+        <input
+          name="replyTo"
+          className="hidden"
+          defaultValue={replyTo?.id}
+        />
         <textarea
           name="textContent"
           value={content}
           className="textarea textarea-lg textarea-ghost w-full h-36"
-          placeholder="今なにしてる？"
+          placeholder={replyTo ? "返信をツイート" : "今なにしてる？"}
           maxLength={400}
           autoFocus
           onChange={(e)=>setContent(e.target.value)}

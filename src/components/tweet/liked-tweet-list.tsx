@@ -78,9 +78,24 @@ export default function LikedTweetList({ q, from, stream = false, authUserId, us
 
   return (
     <div className="join join-vertical w-full">
-      { tweets.map((tweet) => (
-        <TweetCard key={tweet.tweet.id} tweet={tweet.tweet} user={tweet.user} attachments={tweet.attachment ? [tweet.attachment] : null} authUserId={authUserId} isFaved={tweet.engagement?.isFaved} />
-      )) }
+      { tweets.map((tweet) => {
+        const reply = (tweet.replyTweet && tweet.replyUser) && {
+          tweet: tweet.replyTweet,
+          user: tweet.replyUser,
+          attachments: tweet.replyAttachment ? [tweet.replyAttachment] : null,
+        }
+        return (
+          <TweetCard
+            key={tweet.tweet.id}
+            tweet={tweet.tweet}
+            user={tweet.user}
+            attachments={tweet.attachment ? [tweet.attachment] : null}
+            authUserId={authUserId}
+            isFaved={tweet.engagement?.isFaved}
+            reply={reply ?? undefined}
+          />
+        )
+      }) }
       {isLoading && <div className="text-center my-4"><span className="loading loading-spinner loading-md"></span></div>}
     </div>
   )

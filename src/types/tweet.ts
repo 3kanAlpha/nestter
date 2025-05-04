@@ -1,23 +1,32 @@
 import type { SelectTweet } from "@/db/schema";
 
+export type User = {
+  id: number;
+  screenName: string | null;
+  displayName: string | null;
+  avatarUrl: string | null;
+}
+
+export type Attachment = {
+  id: number;
+  fileUrl: string;
+  mimeType: string | null;
+  isSpoiler: boolean;
+  width: number;
+  height: number;
+}
+
+export type Engagement = {
+  isFaved: boolean;
+  favedTimestamp: string;
+}
+
 export type JoinedTweet = {
   tweet: SelectTweet;
-  user: {
-    id: number;
-    screenName: string | null;
-    displayName: string | null;
-    avatarUrl: string | null;
-  };
-  attachment: {
-    id: number;
-    fileUrl: string;
-    mimeType: string | null;
-    isSpoiler: boolean;
-    width: number;
-    height: number;
-  } | null;
-  engagement: {
-    isFaved: boolean;
-    favedTimestamp: string;
-  } | null;
+  user: User;
+  attachment: Attachment | null;
+  engagement: Engagement | null;
+  replyTweet: SelectTweet | null;
+  replyUser: User | null;
+  replyAttachment: Attachment | null;
 }

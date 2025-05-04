@@ -38,13 +38,16 @@ export default function FavoriteButton({ tweetId, favCount, isFaved, auth }: Pro
   }
 
   return (
-    <div
+    <button
+      type="button"
       className={`flex flex-row items-center gap-1 w-6 ${isLocalFaved ? "text-red-500" : ""} ${PREVENT_NAVIGATION_CLASS}`}
+      aria-pressed={isLocalFaved}
       onClick={auth ? handleClick : undefined}
+      disabled={!auth}
     >
       { isLocalFaved ? <HeartSolid /> : <HeartOutline /> }
       <p className="text-xs">{ localFavCount > 0 && `${localFavCount}`}</p>
-    </div>
+    </button>
   )
 }
 

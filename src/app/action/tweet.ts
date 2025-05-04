@@ -2,7 +2,8 @@
 
 import { cache } from 'react';
 import { redirect } from 'next/navigation';
-import { getTableColumns, aliasedTable, eq, desc, lt, gt, lte, gte, ilike, and, sql } from "drizzle-orm";
+import { getTableColumns, eq, desc, lt, gt, lte, gte, ilike, and, sql } from "drizzle-orm";
+import { alias } from 'drizzle-orm/pg-core'
 
 import { auth } from "@/auth";
 import { db } from "@/db/client";
@@ -16,6 +17,17 @@ type SearchOptions = {
   q?: string;
   from?: string;
   searchFaved?: boolean;
+}
+
+const replyTweets = alias(tweets, 'replyTweets')
+const replyUsers = alias(users, 'replyUsers');
+const replyAttachments = alias(tweetAttachments, 'replyAttachments');
+const myFav = alias(favorites, 'myfav');
+
+/** 指定したIDのツイートが存在するかどうか検証する */
+async function isTweetExist(tweetId: number) {
+  const res = await db.select({ id: tweets.id }).from(tweets).where(eq(tweets.id, tweetId)).limit(1);
+  return res.length > 0;
 }
 
 /** 指定したIDのツイートを取得する */
@@ -61,6 +73,16 @@ async function _getTweetById(tweetId: number) {
 /** 指定したIDのツイートを取得する */
 export const getTweetById = cache(_getTweetById);
 
+export async function getReplyTarget(tweetId: number) {
+  const res = await db
+    .select({ id: tweets.id, name: users.screenName })
+    .from(tweets)
+    .where(eq(tweets.id, tweetId))
+    .innerJoin(users, eq(tweets.userId, users.id))
+    .limit(1);
+  return res.length > 0 ? res[0] : null;
+}
+
 export async function searchTweetsB(minTweetId?: number, maxTweetId?: number, options?: SearchOptions) {
   const session = await auth();
   if (options?.searchFaved && (!session || !session.user.screenName)) {
@@ -86,76 +108,59 @@ export async function searchTweetsB(minTweetId?: number, maxTweetId?: number, op
 
   const whereClause = and(...searchCond);
 
-  if (options?.searchFaved) {
-    const res = await db
-      .select({
-        tweet: {
-          ...getTableColumns(tweets),
-        },
-        user: {
-          id: users.id,
-          screenName: users.screenName,
-          displayName: users.displayName,
-          avatarUrl: users.avatarUrl,
-        },
-        attachment: {
-          id: tweetAttachments.id,
-          fileUrl: tweetAttachments.fileUrl,
-          mimeType: tweetAttachments.mimeType,
-          isSpoiler: tweetAttachments.isSpoiler,
-          width: tweetAttachments.imageWidth,
-          height: tweetAttachments.imageHeight,
-        },
-        engagement: {
-          isFaved: sql<boolean>`${favorites.userId} IS NOT NULL`.as('isFaved'),
-          favedTimestamp: favorites.createdAt,
-        }
-      })
-      .from(tweets)
-      .where(whereClause)
-      .innerJoin(users, eq(tweets.userId, users.id))
-      .innerJoin(favorites, and(eq(tweets.id, favorites.tweetId), eq(favorites.userId, sesUserId))) // いいねした投稿のみフィルタ
-      .leftJoin(tweetAttachments, eq(tweets.id, tweetAttachments.tweetId))
-      .limit(20)
-      .orderBy(desc(favorites.createdAt));
-    return res;
-  } else {
-    const res = await db
-      .select({
-        tweet: {
-          ...getTableColumns(tweets),
-        },
-        user: {
-          id: users.id,
-          screenName: users.screenName,
-          displayName: users.displayName,
-          avatarUrl: users.avatarUrl,
-        },
-        attachment: {
-          id: tweetAttachments.id,
-          fileUrl: tweetAttachments.fileUrl,
-          mimeType: tweetAttachments.mimeType,
-          isSpoiler: tweetAttachments.isSpoiler,
-          width: tweetAttachments.imageWidth,
-          height: tweetAttachments.imageHeight,
-        },
-        engagement: {
-          isFaved: sql<boolean>`${favorites.userId} IS NOT NULL`.as('isFaved'),
-          favedTimestamp: favorites.createdAt,
-        }
-      })
-      .from(tweets)
-      .where(whereClause)
-      .innerJoin(users, eq(tweets.userId, users.id))
-      .leftJoin(favorites, and(eq(tweets.id, favorites.tweetId), eq(favorites.userId, sesUserId)))
-      .leftJoin(tweetAttachments, eq(tweets.id, tweetAttachments.tweetId))
-      .limit(20)
-      .orderBy(desc(tweets.createdAt));
-    return res;
-  }
+  const res = await db
+    .select({
+      tweet: {
+        ...getTableColumns(tweets),
+      },
+      user: {
+        id: users.id,
+        screenName: users.screenName,
+        displayName: users.displayName,
+        avatarUrl: users.avatarUrl,
+      },
+      attachment: {
+        id: tweetAttachments.id,
+        fileUrl: tweetAttachments.fileUrl,
+        mimeType: tweetAttachments.mimeType,
+        isSpoiler: tweetAttachments.isSpoiler,
+        width: tweetAttachments.imageWidth,
+        height: tweetAttachments.imageHeight,
+      },
+      engagement: {
+        isFaved: sql<boolean>`${favorites.userId} IS NOT NULL`.as('isFaved'),
+        favedTimestamp: favorites.createdAt,
+      },
+      replyTweet: {
+        ...getTableColumns(replyTweets),
+      },
+      replyUser: {
+        id: replyUsers.id,
+        screenName: replyUsers.screenName,
+        displayName: replyUsers.displayName,
+        avatarUrl: replyUsers.avatarUrl,
+      },
+      replyAttachment: {
+        id: replyAttachments.id,
+        fileUrl: replyAttachments.fileUrl,
+        mimeType: replyAttachments.mimeType,
+        isSpoiler: replyAttachments.isSpoiler,
+        width: replyAttachments.imageWidth,
+        height: replyAttachments.imageHeight,
+      },
+    })
+    .from(tweets)
+    .where(whereClause)
+    .innerJoin(users, eq(tweets.userId, users.id))
+    .leftJoin(favorites, and(eq(tweets.id, favorites.tweetId), eq(favorites.userId, sesUserId)))
+    .leftJoin(tweetAttachments, eq(tweets.id, tweetAttachments.tweetId))
+    .leftJoin(replyTweets, eq(tweets.replyTo, replyTweets.id))
+    .leftJoin(replyUsers, eq(replyTweets.userId, replyUsers.id))
+    .leftJoin(replyAttachments, eq(replyAttachments.tweetId, replyTweets.id))
+    .limit(20)
+    .orderBy(desc(tweets.createdAt));
+  return res;
 }
-
-const myFav = aliasedTable(favorites, 'myfav');
 
 /** ユーザーIDがtargetUserIdであるユーザーのいいねを取得する */
 export async function searchFavedTweets(targetUserId: number, minTweetTimestamp?: string, maxTweetTimestamp?: string, options?: SearchOptions) {
@@ -202,7 +207,24 @@ export async function searchFavedTweets(targetUserId: number, minTweetTimestamp?
       engagement: {
         isFaved: sql<boolean>`${myFav.userId} IS NOT NULL`.as('isFaved'),
         favedTimestamp: favorites.createdAt,
-      }
+      },
+      replyTweet: {
+        ...getTableColumns(replyTweets),
+      },
+      replyUser: {
+        id: replyUsers.id,
+        screenName: replyUsers.screenName,
+        displayName: replyUsers.displayName,
+        avatarUrl: replyUsers.avatarUrl,
+      },
+      replyAttachment: {
+        id: replyAttachments.id,
+        fileUrl: replyAttachments.fileUrl,
+        mimeType: replyAttachments.mimeType,
+        isSpoiler: replyAttachments.isSpoiler,
+        width: replyAttachments.imageWidth,
+        height: replyAttachments.imageHeight,
+      },
     })
     .from(tweets)
     .where(whereClause)
@@ -210,6 +232,9 @@ export async function searchFavedTweets(targetUserId: number, minTweetTimestamp?
     .innerJoin(favorites, and(eq(tweets.id, favorites.tweetId), eq(favorites.userId, targetUserId))) // 対象のユーザーがいいねした投稿のみフィルタ
     .leftJoin(myFav, and(eq(tweets.id, myFav.tweetId), eq(myFav.userId, myUserId))) // 自分がいいねしているかどうか検証するため
     .leftJoin(tweetAttachments, eq(tweets.id, tweetAttachments.tweetId))
+    .leftJoin(replyTweets, eq(tweets.replyTo, replyTweets.id))
+    .leftJoin(replyUsers, eq(replyTweets.userId, replyUsers.id))
+    .leftJoin(replyAttachments, eq(replyAttachments.tweetId, replyTweets.id))
     .limit(20)
     .orderBy(desc(favorites.createdAt));
   return res;
@@ -266,11 +291,24 @@ export async function insertTweet(prev: any, formData: FormData) {
   const isSpoilerText = formData.get("isSpoiler") as string;
   const isSpoiler = isSpoilerText === "on";
 
+  const _replyTo = (formData.get("replyTo") as string).trim();
+  const replyTo = Number(_replyTo);
+  if (replyTo > 0) {
+    const parentExist = await isTweetExist(replyTo);
+    if (!parentExist) {
+      return {
+        status: "error",
+        message: "リプライ先のツイートは存在しません",
+      };
+    }
+  }
+
   const reqBody: InsertTweet = {
     textContent: content,
     userId: sesUserId,
     // 画像つきツイートはファイルのアップロードが終わるまで表示されないようにする
     isPending: (attachments.size > 0),
+    replyTo: replyTo > 0 ? replyTo : undefined,
   }
 
   const row = await db.insert(tweets).values(reqBody).onConflictDoNothing().returning({ newTweetId: tweets.id });
@@ -305,6 +343,11 @@ export async function insertTweet(prev: any, formData: FormData) {
     }
   }
 
+  if (replyTo > 0) {
+    // リプライならリプライ先のreplyCountをインクリメントする
+    await db.update(tweets).set({ replyCount: sql`${tweets.replyCount} + 1` }).where(eq(tweets.id, replyTo));
+  }
+
   redirect("/");
 }
 
@@ -318,10 +361,16 @@ export async function deleteTweet(tweetId: number, currentPath?: string) {
   }
   const sesUserId = Number(session.user.id);
 
-  const row = await db.delete(tweets).where(and(eq(tweets.id, tweetId), eq(tweets.userId, sesUserId))).returning({ deletedTweetId: tweets.id });
+  const row = await db.delete(tweets).where(and(eq(tweets.id, tweetId), eq(tweets.userId, sesUserId))).returning({ deletedTweetId: tweets.id, replyTo: tweets.replyTo });
 
   if (row.length > 0) {
-    console.log(`Deleted tweet #${tweetId}`)
+    console.log(`Deleted tweet #${tweetId}`);
+
+    if (row[0].replyTo) {
+      // リプライならリプライ先のreplyCountをデクリメントする
+      await db.update(tweets).set({ replyCount: sql`${tweets.replyCount} - 1` }).where(eq(tweets.id, row[0].replyTo));
+    }
+
     if (currentPath) {
       redirect(currentPath);
     }
