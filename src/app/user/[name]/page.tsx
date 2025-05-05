@@ -126,6 +126,13 @@ export default async function Profile({ params }: Props) {
             <input type="radio" name="user_page_tabs" className="tab" aria-label="ツイート" defaultChecked />
             <div className="tab-content">
               <Suspense>
+                <TweetList from={name} authUserId={sesUserId} excludeReply />
+              </Suspense>
+            </div>
+
+            <input type="radio" name="user_page_tabs" className="tab" aria-label="ツイートと返信" />
+            <div className="tab-content">
+              <Suspense>
                 <TweetList from={name} authUserId={sesUserId} />
               </Suspense>
             </div>

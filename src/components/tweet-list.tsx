@@ -10,6 +10,12 @@ type Props = {
   q?: string;
   /** ツイートの送信元ユーザーID */
   from?: string;
+  /** ツイートのリプライ先ユーザーID */
+  to?: string;
+  /** ツイートのリプライ先ID */
+  replyTo?: number;
+  /** リプライを除外するか */
+  excludeReply?: boolean;
   /** 新しいツイートを自動的に取得するか */
   stream?: boolean;
   /** ログインしているユーザーのID */
@@ -18,7 +24,7 @@ type Props = {
   searchFaved?: boolean;
 }
 
-export default function TweetList({ q, from, stream = false, authUserId, searchFaved = false }: Props) {
+export default function TweetList({ q, from, to, replyTo, excludeReply, stream = false, authUserId }: Props) {
   const [tweets, setTweets] = useState<JoinedTweet[]>([]);
   const [lastTweetId, setLastTweetId] = useState<number>(0);
   const [isLoading, setLoading] = useState(false);
@@ -28,7 +34,13 @@ export default function TweetList({ q, from, stream = false, authUserId, searchF
   const loadMoreTweets = useCallback(async () => {
     if (isLoading || !hasMore) return;
     setLoading(true);
-    const newTweets = await searchTweetsB(undefined, lastTweetId > 0 ? lastTweetId-1 : undefined, { q: q, from: from, searchFaved: searchFaved });
+    const newTweets = await searchTweetsB(undefined, lastTweetId > 0 ? lastTweetId-1 : undefined, {
+      q: q,
+      from: from,
+      to: to,
+      replyTo: replyTo,
+      excludeReply: excludeReply,
+    });
     setTweets((prev) => [...prev, ...newTweets]);
     if (newTweets.length === 0) {
       setHasMore(false);
@@ -37,16 +49,22 @@ export default function TweetList({ q, from, stream = false, authUserId, searchF
       setLastTweetId(lastTweet.tweet.id);
     }
     setLoading(false);
-  }, [isLoading, hasMore, lastTweetId, q, from, searchFaved]);
+  }, [isLoading, hasMore, lastTweetId, q, from, to, replyTo, excludeReply]);
 
   /** 新しいツイートを読み込む */
   const loadNewTweets = useCallback(async () => {
     const topTweetId = tweets.length > 0 ? tweets[0].tweet.id : 0;
-    const newTweets = await searchTweetsB(topTweetId+1, undefined, { q: q, from: from, searchFaved: searchFaved });
+    const newTweets = await searchTweetsB(topTweetId+1, undefined, {
+      q: q,
+      from: from,
+      to: to,
+      replyTo: replyTo,
+      excludeReply: excludeReply,
+    });
     if (newTweets.length > 0) {
       setTweets((prev) => [...newTweets, ...prev]);
     }
-  }, [tweets, q, from, searchFaved]);
+  }, [tweets, q, from, to, replyTo, excludeReply]);
 
   useEffect(() => {
     loadMoreTweets();

@@ -2,7 +2,7 @@
 
 import { cache } from 'react';
 import { redirect } from 'next/navigation';
-import { getTableColumns, eq, desc, lt, gt, lte, gte, ilike, and, sql } from "drizzle-orm";
+import { getTableColumns, eq, desc, lt, gt, lte, gte, ilike, and, sql, isNull } from "drizzle-orm";
 import { alias } from 'drizzle-orm/pg-core'
 
 import { auth } from "@/auth";
@@ -15,8 +15,14 @@ import { TWEET_TEXT_MAX_LENGTH, TWEET_IMAGE_MAX_SIZE_MB } from '@/consts/tweet';
 
 type SearchOptions = {
   q?: string;
+  /** ツイートの作成ユーザー */
   from?: string;
+  /** ツイートのリプライ先ユーザー */
+  to?: string;
   searchFaved?: boolean;
+  /** リプライ先のツイートID */
+  replyTo?: number;
+  excludeReply?: boolean;
 }
 
 const replyTweets = alias(tweets, 'replyTweets')
@@ -58,13 +64,33 @@ async function _getTweetById(tweetId: number) {
       engagement: {
         isFaved: sql<boolean>`${favorites.userId} IS NOT NULL`.as('isFaved'),
         favedTimestamp: favorites.createdAt,
-      }
+      },
+      replyTweet: {
+        ...getTableColumns(replyTweets),
+      },
+      replyUser: {
+        id: replyUsers.id,
+        screenName: replyUsers.screenName,
+        displayName: replyUsers.displayName,
+        avatarUrl: replyUsers.avatarUrl,
+      },
+      replyAttachment: {
+        id: replyAttachments.id,
+        fileUrl: replyAttachments.fileUrl,
+        mimeType: replyAttachments.mimeType,
+        isSpoiler: replyAttachments.isSpoiler,
+        width: replyAttachments.imageWidth,
+        height: replyAttachments.imageHeight,
+      },
     })
     .from(tweets)
     .where(eq(tweets.id, tweetId))
     .innerJoin(users, eq(tweets.userId, users.id))
     .leftJoin(favorites, and(eq(tweets.id, favorites.tweetId), eq(favorites.userId, sesUserId)))
     .leftJoin(tweetAttachments, eq(tweets.id, tweetAttachments.tweetId))
+    .leftJoin(replyTweets, eq(tweets.replyTo, replyTweets.id))
+    .leftJoin(replyUsers, eq(replyTweets.userId, replyUsers.id))
+    .leftJoin(replyAttachments, eq(replyAttachments.tweetId, replyTweets.id))
     .limit(1)
   
     return res.length > 0 ? res[0] : null;
@@ -85,9 +111,6 @@ export async function getReplyTarget(tweetId: number) {
 
 export async function searchTweetsB(minTweetId?: number, maxTweetId?: number, options?: SearchOptions) {
   const session = await auth();
-  if (options?.searchFaved && (!session || !session.user.screenName)) {
-    return [];
-  }
   const rawUserId = Number(session?.user.id)
   const sesUserId = Number.isFinite(rawUserId) ? rawUserId : 0;
 
@@ -103,6 +126,15 @@ export async function searchTweetsB(minTweetId?: number, maxTweetId?: number, op
   }
   if (options?.from) {
     searchCond.push(eq(users.screenName, options.from));
+  }
+  if (options?.to) {
+    searchCond.push(eq(replyUsers.screenName, options.to));
+  }
+  if (options?.replyTo) {
+    searchCond.push(eq(tweets.replyTo, options.replyTo));
+  }
+  if (options?.excludeReply) {
+    searchCond.push(isNull(tweets.replyTo));
   }
   searchCond.push(eq(tweets.isPending, false));
 
@@ -180,6 +212,15 @@ export async function searchFavedTweets(targetUserId: number, minTweetTimestamp?
   }
   if (options?.from) {
     searchCond.push(eq(users.screenName, options.from));
+  }
+  if (options?.to) {
+    searchCond.push(eq(replyUsers.screenName, options.to));
+  }
+  if (options?.replyTo) {
+    searchCond.push(eq(tweets.replyTo, options.replyTo));
+  }
+  if (options?.excludeReply) {
+    searchCond.push(isNull(tweets.replyTo));
   }
   searchCond.push(eq(tweets.isPending, false));
 

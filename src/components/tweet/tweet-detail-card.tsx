@@ -6,38 +6,32 @@ import { format } from "date-fns";
 import SingleImage from "@/components/tweet/single-image";
 import UserAvatar from "@/components/header/user-avatar";
 import TweetText from "@/components/tweet/tweet-text";
+import EmbedReplyCard from "@/components/tweet/card/embed-reply-card";
 import ReplyButton from "@/components/tweet/card/reply-button";
 import FavoriteButton from "@/components/tweet/card/favorite-button";
 import { defaultAvatarUrl } from '@/consts/account';
 import { deleteTweet } from "@/app/action/tweet";
+
 import type { SelectTweet } from "@/db/schema";
+import { User, Attachment } from "@/types/tweet";
 
-type User = {
-  id: number;
-  screenName: string | null;
-  displayName: string | null;
-  avatarUrl: string | null;
+type ReplyTweet = {
+  tweet: SelectTweet;
+  user: User;
+  attachments: Attachment[] | null;
 }
-
-type Attachments = {
-  id: number;
-  fileUrl: string;
-  mimeType: string | null;
-  isSpoiler: boolean;
-  width: number;
-  height: number;
-}[]
 
 type Props = {
   tweet: SelectTweet;
   user: User;
-  attachments: Attachments | null;
+  attachments: Attachment[] | null;
   isRetweet?: boolean;
   authUserId?: number;
   isFaved?: boolean;
+  reply?: ReplyTweet;
 }
 
-export default function TweetDetailCard({ tweet, user, attachments, isRetweet = false, authUserId, isFaved = false }: Props) {
+export default function TweetDetailCard({ tweet, user, attachments, isRetweet = false, authUserId, isFaved = false, reply }: Props) {
   const pathname = usePathname();
   const router = useRouter();
   const deleteDialogId = `tweet-detail-${tweet.id}-delete-confirm-dialog`;
@@ -76,6 +70,11 @@ export default function TweetDetailCard({ tweet, user, attachments, isRetweet = 
           </div>
           {/* ツイート本文 */}
           <div>
+            { reply && (
+              <div className="mb-2">
+                <EmbedReplyCard tweet={reply.tweet} user={reply.user} attachments={reply.attachments} />
+              </div>
+            ) }
             <p className="whitespace-pre-wrap wrap-anywhere overflow-hidden text-clip">
               <TweetText textContent={tweet.textContent} />
             </p>

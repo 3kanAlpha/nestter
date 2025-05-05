@@ -36,6 +36,8 @@ export default function TweetCard({ tweet, user, attachments, isRetweet = false,
   const router = useRouter();
   const dialogId = `tweet-card-${tweet.id}-delete-confirm-dialog`;
 
+  const inDetailPage = pathname.match(/^\/post\/\d+$/g) != null;
+
   async function handleDeleteTweet() {
     await deleteTweet(tweet.id, pathname);
     router.refresh(); // ページの表示を更新する
@@ -89,7 +91,7 @@ export default function TweetCard({ tweet, user, attachments, isRetweet = false,
               </p>
             </div>
             <div className="mb-4 grow pr-2">
-              { reply && (
+              { reply && !inDetailPage && (
                 <div className="mt-1 mb-2">
                   <EmbedReplyCard tweet={reply.tweet} user={reply.user} attachments={reply.attachments} />
                 </div>

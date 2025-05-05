@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { auth } from "@/auth";
 import { getTweetById } from "@/app/action/tweet";
 import TweetDetailCard from "@/components/tweet/tweet-detail-card";
+import TweetList from "@/components/tweet-list";
 
 type Props = {
   params: Promise<{ id: string }>
@@ -48,6 +49,12 @@ export default async function PostDetail({ params }: Props) {
   const session = await auth();
   const sesUserId = session?.user ? Number(session.user.id) : undefined;
 
+  const reply = (tweet.replyTweet && tweet.replyUser) && {
+    tweet: tweet.replyTweet,
+    user: tweet.replyUser,
+    attachments: tweet.replyAttachment ? [tweet.replyAttachment] : null,
+  }
+
   return (
     <div className="flex flex-col items-center pb-4 lg:pt-4">
       <div className="w-screen lg:w-lg">
@@ -58,8 +65,19 @@ export default async function PostDetail({ params }: Props) {
             attachments={tweet.attachment ? [tweet.attachment] : null}
             authUserId={sesUserId}
             isFaved={tweet.engagement?.isFaved}
+            reply={reply ?? undefined}
           />
         </Suspense>
+        { tweet.tweet.replyCount > 0 && (
+          <>
+            <div className="my-2 pl-2">
+              <p className="text-xl font-semibold">返信</p>
+            </div>
+            <Suspense>
+              <TweetList authUserId={sesUserId} replyTo={Number(id)} />
+            </Suspense>
+          </>
+        ) }
       </div>
     </div>
   )
