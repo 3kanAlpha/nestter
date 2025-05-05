@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 import { auth } from "@/auth";
 import { getTweetById } from "@/app/action/tweet";
 import TweetDetailCard from "@/components/tweet/tweet-detail-card";
@@ -44,6 +45,9 @@ export default async function PostDetail({ params }: Props) {
         <p>This tweet does not exist.</p>
       </div>
     )
+  } else if (tweet.tweet.retweetParentId) {
+    // リツイートなら親ツイートにリダイレクトする
+    redirect(`/post/${tweet.tweet.retweetParentId}`);
   }
 
   const session = await auth();
