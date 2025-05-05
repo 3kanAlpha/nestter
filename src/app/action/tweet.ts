@@ -7,11 +7,13 @@ import { alias } from 'drizzle-orm/pg-core'
 
 import { auth } from "@/auth";
 import { db } from "@/db/client";
-import { tweets, users, tweetAttachments, favorites, InsertTweet } from "@/db/schema";
+import { tweets, users, tweetAttachments, favorites, InsertTweet, retweets } from "@/db/schema";
 import { getStringLength } from "@/utils/string-util";
 import { uploadTempImage } from './image';
 import { invokeUploadImage } from './lambda';
 import { TWEET_TEXT_MAX_LENGTH, TWEET_IMAGE_MAX_SIZE_MB } from '@/consts/tweet';
+
+import { ActionResponse } from '@/types/action';
 
 type SearchOptions = {
   q?: string;
@@ -25,9 +27,14 @@ type SearchOptions = {
   excludeReply?: boolean;
 }
 
-const replyTweets = alias(tweets, 'replyTweets')
+const replyTweets = alias(tweets, 'replyTweets');
 const replyUsers = alias(users, 'replyUsers');
 const replyAttachments = alias(tweetAttachments, 'replyAttachments');
+const retweetTweets = alias(tweets, 'retweetTweets');
+const retweetUsers = alias(users, 'retweetUsers');
+const retweetAttachments = alias(tweetAttachments, 'retweetAttachments');
+const retweetLikes = alias(favorites, 'retweetLikes');
+const retweetRetweets = alias(retweets, 'retweetRetweets');
 const myFav = alias(favorites, 'myfav');
 
 /** 指定したIDのツイートが存在するかどうか検証する */
@@ -64,6 +71,8 @@ async function _getTweetById(tweetId: number) {
       engagement: {
         isFaved: sql<boolean>`${favorites.userId} IS NOT NULL`.as('isFaved'),
         favedTimestamp: favorites.createdAt,
+        isRetweeted: sql<boolean>`${retweets.userId} IS NOT NULL`.as('isRetweeted'),
+        retweetedTimestamp: retweets.createdAt,
       },
       replyTweet: {
         ...getTableColumns(replyTweets),
@@ -87,6 +96,7 @@ async function _getTweetById(tweetId: number) {
     .where(eq(tweets.id, tweetId))
     .innerJoin(users, eq(tweets.userId, users.id))
     .leftJoin(favorites, and(eq(tweets.id, favorites.tweetId), eq(favorites.userId, sesUserId)))
+    .leftJoin(retweets, and(eq(tweets.id, retweets.tweetId), eq(retweets.userId, sesUserId)))
     .leftJoin(tweetAttachments, eq(tweets.id, tweetAttachments.tweetId))
     .leftJoin(replyTweets, eq(tweets.replyTo, replyTweets.id))
     .leftJoin(replyUsers, eq(replyTweets.userId, replyUsers.id))
@@ -162,6 +172,10 @@ export async function searchTweetsB(minTweetId?: number, maxTweetId?: number, op
       engagement: {
         isFaved: sql<boolean>`${favorites.userId} IS NOT NULL`.as('isFaved'),
         favedTimestamp: favorites.createdAt,
+        isRetweeted: sql<boolean>`${retweets.userId} IS NOT NULL`.as('isRetweeted'),
+        retweetedTimestamp: retweets.createdAt,
+        parentFaved: sql<boolean>`${retweetLikes.userId} IS NOT NULL`.as('parentFaved'),
+        parentRetweeted: sql<boolean>`${retweetRetweets.userId} IS NOT NULL`.as('parentRetweeted'),
       },
       replyTweet: {
         ...getTableColumns(replyTweets),
@@ -180,15 +194,38 @@ export async function searchTweetsB(minTweetId?: number, maxTweetId?: number, op
         width: replyAttachments.imageWidth,
         height: replyAttachments.imageHeight,
       },
+      retweetTweet: {
+        ...getTableColumns(retweetTweets),
+      },
+      retweetUser: {
+        id: retweetUsers.id,
+        screenName: retweetUsers.screenName,
+        displayName: retweetUsers.displayName,
+        avatarUrl: retweetUsers.avatarUrl,
+      },
+      retweetAttachment: {
+        id: retweetAttachments.id,
+        fileUrl: retweetAttachments.fileUrl,
+        mimeType: retweetAttachments.mimeType,
+        isSpoiler: retweetAttachments.isSpoiler,
+        width: retweetAttachments.imageWidth,
+        height: retweetAttachments.imageHeight,
+      },
     })
     .from(tweets)
     .where(whereClause)
     .innerJoin(users, eq(tweets.userId, users.id))
     .leftJoin(favorites, and(eq(tweets.id, favorites.tweetId), eq(favorites.userId, sesUserId)))
+    .leftJoin(retweets, and(eq(tweets.id, retweets.tweetId), eq(retweets.userId, sesUserId)))
     .leftJoin(tweetAttachments, eq(tweets.id, tweetAttachments.tweetId))
     .leftJoin(replyTweets, eq(tweets.replyTo, replyTweets.id))
     .leftJoin(replyUsers, eq(replyTweets.userId, replyUsers.id))
     .leftJoin(replyAttachments, eq(replyAttachments.tweetId, replyTweets.id))
+    .leftJoin(retweetTweets, eq(tweets.retweetParentId, retweetTweets.id))
+    .leftJoin(retweetUsers, eq(retweetTweets.userId, retweetUsers.id))
+    .leftJoin(retweetAttachments, eq(retweetAttachments.tweetId, retweetTweets.id))
+    .leftJoin(retweetLikes, and(eq(tweets.retweetParentId, retweetLikes.tweetId), eq(retweetLikes.userId, sesUserId)))
+    .leftJoin(retweetRetweets, and(eq(tweets.retweetParentId, retweetRetweets.tweetId), eq(retweetRetweets.userId, sesUserId)))
     .limit(20)
     .orderBy(desc(tweets.createdAt));
   return res;
@@ -248,6 +285,8 @@ export async function searchFavedTweets(targetUserId: number, minTweetTimestamp?
       engagement: {
         isFaved: sql<boolean>`${myFav.userId} IS NOT NULL`.as('isFaved'),
         favedTimestamp: favorites.createdAt,
+        isRetweeted: sql<boolean>`${retweets.userId} IS NOT NULL`.as('isRetweeted'),
+        retweetedTimestamp: retweets.createdAt,
       },
       replyTweet: {
         ...getTableColumns(replyTweets),
@@ -272,6 +311,7 @@ export async function searchFavedTweets(targetUserId: number, minTweetTimestamp?
     .innerJoin(users, eq(tweets.userId, users.id))
     .innerJoin(favorites, and(eq(tweets.id, favorites.tweetId), eq(favorites.userId, targetUserId))) // 対象のユーザーがいいねした投稿のみフィルタ
     .leftJoin(myFav, and(eq(tweets.id, myFav.tweetId), eq(myFav.userId, myUserId))) // 自分がいいねしているかどうか検証するため
+    .leftJoin(retweets, and(eq(tweets.id, retweets.tweetId), eq(retweets.userId, myUserId)))
     .leftJoin(tweetAttachments, eq(tweets.id, tweetAttachments.tweetId))
     .leftJoin(replyTweets, eq(tweets.replyTo, replyTweets.id))
     .leftJoin(replyUsers, eq(replyTweets.userId, replyUsers.id))
@@ -285,8 +325,7 @@ async function updateIsPending(tweetId: number, newState: boolean) {
   await db.update(tweets).set({ isPending: newState }).where(eq(tweets.id, tweetId));
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function insertTweet(prev: any, formData: FormData) {
+export async function insertTweet(prev: ActionResponse, formData: FormData) {
   const session = await auth();
   if (!session || !session.user.screenName) {
     return {
@@ -392,17 +431,14 @@ export async function insertTweet(prev: any, formData: FormData) {
   redirect("/");
 }
 
-export async function deleteTweet(tweetId: number, currentPath?: string) {
+export async function deleteTweet(tweetId: number) {
   const session = await auth();
   if (!session || !session.user.screenName) {
-    return {
-      status: "error",
-      message: "この操作にはログインが必要です",
-    }
+    return false;
   }
   const sesUserId = Number(session.user.id);
 
-  const row = await db.delete(tweets).where(and(eq(tweets.id, tweetId), eq(tweets.userId, sesUserId))).returning({ deletedTweetId: tweets.id, replyTo: tweets.replyTo });
+  const row = await db.delete(tweets).where(and(eq(tweets.id, tweetId), eq(tweets.userId, sesUserId))).returning({ deletedTweetId: tweets.id, replyTo: tweets.replyTo, retweetParent: tweets.retweetParentId });
 
   if (row.length > 0) {
     console.log(`Deleted tweet #${tweetId}`);
@@ -412,8 +448,13 @@ export async function deleteTweet(tweetId: number, currentPath?: string) {
       await db.update(tweets).set({ replyCount: sql`${tweets.replyCount} - 1` }).where(eq(tweets.id, row[0].replyTo));
     }
 
-    if (currentPath) {
-      redirect(currentPath);
+    if (row[0].retweetParent) {
+      // リツイートなら親ツイートのretweetCountをデクリメントする
+      await db.update(tweets).set({ retweetCount: sql`${tweets.retweetCount} - 1` }).where(eq(tweets.id, row[0].retweetParent));
     }
+
+    return true;
   }
+
+  return false;
 }

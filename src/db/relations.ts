@@ -1,18 +1,18 @@
 import { relations } from "drizzle-orm/relations";
-import { users, tweets, tweetAttachments, favorites, follows } from "./schema";
+import { users, comps, tweets, tweetAttachments, favorites, retweets, follows } from "./schema";
 
-export const tweetsRelations = relations(tweets, ({one, many}) => ({
+export const compsRelations = relations(comps, ({one}) => ({
 	user: one(users, {
-		fields: [tweets.userId],
+		fields: [comps.createdUserId],
 		references: [users.id]
 	}),
-	tweetAttachments: many(tweetAttachments),
-	favorites: many(favorites),
 }));
 
 export const usersRelations = relations(users, ({many}) => ({
+	comps: many(comps),
 	tweets: many(tweets),
 	favorites: many(favorites),
+	retweets: many(retweets),
 	follows_followerId: many(follows, {
 		relationName: "follows_followerId_users_id"
 	}),
@@ -28,6 +28,16 @@ export const tweetAttachmentsRelations = relations(tweetAttachments, ({one}) => 
 	}),
 }));
 
+export const tweetsRelations = relations(tweets, ({one, many}) => ({
+	tweetAttachments: many(tweetAttachments),
+	user: one(users, {
+		fields: [tweets.userId],
+		references: [users.id]
+	}),
+	favorites: many(favorites),
+	retweets: many(retweets),
+}));
+
 export const favoritesRelations = relations(favorites, ({one}) => ({
 	user: one(users, {
 		fields: [favorites.userId],
@@ -35,6 +45,17 @@ export const favoritesRelations = relations(favorites, ({one}) => ({
 	}),
 	tweet: one(tweets, {
 		fields: [favorites.tweetId],
+		references: [tweets.id]
+	}),
+}));
+
+export const retweetsRelations = relations(retweets, ({one}) => ({
+	user: one(users, {
+		fields: [retweets.userId],
+		references: [users.id]
+	}),
+	tweet: one(tweets, {
+		fields: [retweets.tweetId],
 		references: [tweets.id]
 	}),
 }));

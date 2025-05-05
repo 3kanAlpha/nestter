@@ -7,6 +7,7 @@ import SingleImage from "./tweet/single-image";
 import UserAvatar from "./header/user-avatar";
 import TweetText from "./tweet/tweet-text";
 import ReplyButton from "./tweet/card/reply-button";
+import RetweetButton from "./tweet/card/retweet-button";
 import FavoriteButton from "./tweet/card/favorite-button";
 import { defaultAvatarUrl } from '@/consts/account';
 import { PREVENT_NAVIGATION_CLASS } from "@/consts/layout";
@@ -27,11 +28,15 @@ type Props = {
   attachments: Attachment[] | null;
   isRetweet?: boolean;
   authUserId?: number;
+  /** ツイートを閲覧しているユーザーがいいね済みか */
   isFaved?: boolean;
+  /** ツイートを閲覧しているユーザーがリツイート済みか */
+  isRetweeted?: boolean;
   reply?: ReplyTweet;
+  retweet?: ReplyTweet;
 }
 
-export default function TweetCard({ tweet, user, attachments, isRetweet = false, authUserId, isFaved = false, reply }: Props) {
+export default function TweetCard({ tweet, user, attachments, isRetweet = false, authUserId, isFaved = false, isRetweeted = false, reply }: Props) {
   const pathname = usePathname();
   const router = useRouter();
   const dialogId = `tweet-card-${tweet.id}-delete-confirm-dialog`;
@@ -39,7 +44,7 @@ export default function TweetCard({ tweet, user, attachments, isRetweet = false,
   const inDetailPage = pathname.match(/^\/post\/\d+$/g) != null;
 
   async function handleDeleteTweet() {
-    await deleteTweet(tweet.id, pathname);
+    await deleteTweet(tweet.id);
     router.refresh(); // ページの表示を更新する
   }
 
@@ -116,11 +121,7 @@ export default function TweetCard({ tweet, user, attachments, isRetweet = false,
                 auth={authUserId !== undefined}
               />
               {/* リツイート */}
-              <div className="flex flex-row items-center gap-1 w-6">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 0 0-3.7-3.7 48.678 48.678 0 0 0-7.324 0 4.006 4.006 0 0 0-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 0 0 3.7 3.7 48.656 48.656 0 0 0 7.324 0 4.006 4.006 0 0 0 3.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3-3 3" />
-                </svg>
-              </div>
+              <RetweetButton tweetId={tweet.id} retweetCount={tweet.retweetCount} isRetweeted={isRetweeted} auth={authUserId !== undefined} />
               {/* いいね */}
               <FavoriteButton tweetId={tweet.id} favCount={tweet.favoriteCount} isFaved={isFaved} auth={authUserId !== undefined} />
               {/* 共有 */}

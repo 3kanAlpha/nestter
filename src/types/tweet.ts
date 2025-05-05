@@ -18,7 +18,11 @@ export type Attachment = {
 
 export type Engagement = {
   isFaved: boolean;
-  favedTimestamp: string;
+  favedTimestamp: string | null;
+  isRetweeted: boolean;
+  retweetedTimestamp: string | null;
+  parentFaved?: boolean;
+  parentRetweeted?: boolean;
 }
 
 export type JoinedTweet = {
@@ -29,4 +33,7 @@ export type JoinedTweet = {
   replyTweet: SelectTweet | null;
   replyUser: User | null;
   replyAttachment: Attachment | null;
+  retweetTweet?: SelectTweet | null;
+  retweetUser?: User | null;
+  retweetAttachment?: Attachment | null;
 }

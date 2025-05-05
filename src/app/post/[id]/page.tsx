@@ -65,6 +65,7 @@ export default async function PostDetail({ params }: Props) {
             attachments={tweet.attachment ? [tweet.attachment] : null}
             authUserId={sesUserId}
             isFaved={tweet.engagement?.isFaved}
+            isRetweeted={tweet.engagement.isRetweeted}
             reply={reply ?? undefined}
           />
         </Suspense>

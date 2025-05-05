@@ -28,7 +28,7 @@ export default function LikedTweetList({ q, from, stream = false, authUserId, us
     if (isLoading || !hasMore) return;
     setLoading(true);
     const lastTweet = tweets[tweets.length-1];
-    const newTweets = await searchFavedTweets(userId, undefined, lastTweet ? lastTweet.engagement?.favedTimestamp : undefined, { q: q, from: from });
+    const newTweets = await searchFavedTweets(userId, undefined, (lastTweet && lastTweet.engagement?.favedTimestamp) ? lastTweet.engagement.favedTimestamp : undefined, { q: q, from: from });
     setTweets((prev) => [...prev, ...newTweets]);
     if (newTweets.length === 0) {
       setHasMore(false);
@@ -39,7 +39,7 @@ export default function LikedTweetList({ q, from, stream = false, authUserId, us
   /** 新しいツイートを読み込む */
   const loadNewTweets = useCallback(async () => {
     const topTweet = tweets[0];
-    const newTweets = await searchFavedTweets(userId, topTweet ? topTweet.engagement?.favedTimestamp : undefined, undefined, { q: q, from: from });
+    const newTweets = await searchFavedTweets(userId, (topTweet && topTweet.engagement?.favedTimestamp) ? topTweet.engagement.favedTimestamp : undefined, undefined, { q: q, from: from });
     if (newTweets.length > 0) {
       setTweets((prev) => [...newTweets, ...prev]);
     }

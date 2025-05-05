@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { searchTweetsB } from "@/app/action/tweet";
 import TweetCard from "./tweet-card";
+import RetweetCard from "./tweet/retweet-card";
 
 import { JoinedTweet } from "@/types/tweet";
 
@@ -105,17 +106,36 @@ export default function TweetList({ q, from, to, replyTo, excludeReply, stream =
           user: tweet.replyUser,
           attachments: tweet.replyAttachment ? [tweet.replyAttachment] : null,
         }
-        return (
-          <TweetCard
-            key={tweet.tweet.id}
-            tweet={tweet.tweet}
-            user={tweet.user}
-            attachments={tweet.attachment ? [tweet.attachment] : null}
-            authUserId={authUserId}
-            isFaved={tweet.engagement?.isFaved}
-            reply={reply ?? undefined}
-          />
-        )
+        const retweet = (tweet.retweetTweet && tweet.retweetUser) && {
+          tweet: tweet.retweetTweet,
+          user: tweet.retweetUser,
+          attachments: tweet.retweetAttachment ? [tweet.retweetAttachment] : null,
+        }
+        if (retweet) {
+          return (
+            <RetweetCard
+              key={tweet.tweet.id}
+              user={tweet.user}
+              authUserId={authUserId}
+              isFaved={tweet.engagement?.parentFaved}
+              isRetweeted={tweet.engagement?.parentRetweeted}
+              retweet={retweet}
+            />
+          )
+        } else {
+          return (
+            <TweetCard
+              key={tweet.tweet.id}
+              tweet={tweet.tweet}
+              user={tweet.user}
+              attachments={tweet.attachment ? [tweet.attachment] : null}
+              authUserId={authUserId}
+              isFaved={tweet.engagement?.isFaved}
+              isRetweeted={tweet.engagement?.isRetweeted}
+              reply={reply ?? undefined}
+            />
+          )
+        }
       }) }
       {isLoading && <div className="text-center my-4"><span className="loading loading-spinner loading-md"></span></div>}
     </div>

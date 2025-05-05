@@ -65,6 +65,7 @@ export const tweets = pgTable("tweets", {
 	userId: integer("user_id").notNull(),
 	replyCount: integer("reply_count").default(0).notNull(),
 	isPending: boolean("is_pending").default(false).notNull(),
+	retweetParentId: integer("retweet_parent_id"),
 }, (table) => [
 	foreignKey({
 			columns: [table.userId],
@@ -97,9 +98,9 @@ export const users = pgTable("users", {
 	accountLevel: integer().default(0).notNull(),
 }, (table) => [
 	unique("users_screen_name_key").on(table.screenName),
-	check("display_name_max_length", sql`length("displayName") <= 50`),
 	check("screen_name_max_length", sql`(length("screenName") >= 3) AND (length("screenName") <= 15) AND ("screenName" ~ '^[A-Za-z0-9_]+$'::text)`),
-	check("bio_max_length", sql`length(bio) <= 160`),
+	check("display_name_max_length", sql`length("displayName") <= 120`),
+	check("bio_max_length", sql`length(bio) <= 400`),
 ]);
 
 export const verificationToken = pgTable("verification_token", {
@@ -126,6 +127,24 @@ export const favorites = pgTable("favorites", {
 			name: "tweet_id_fkey"
 		}),
 	primaryKey({ columns: [table.userId, table.tweetId], name: "fav_pkey"}),
+]);
+
+export const retweets = pgTable("retweets", {
+	userId: integer("user_id").notNull(),
+	tweetId: integer("tweet_id").notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.userId],
+			foreignColumns: [users.id],
+			name: "user_id_fkey"
+		}),
+	foreignKey({
+			columns: [table.tweetId],
+			foreignColumns: [tweets.id],
+			name: "tweet_id_fkey"
+		}).onDelete("cascade"),
+	primaryKey({ columns: [table.userId, table.tweetId], name: "retweets_pkey"}),
 ]);
 
 export const follows = pgTable("follows", {
@@ -156,3 +175,5 @@ export type SelectAttachments = typeof tweetAttachments.$inferSelect;
 export type InsertAttachments = typeof tweetAttachments.$inferInsert;
 
 export type InsertFavorites = typeof favorites.$inferInsert;
+
+export type InsertRetweet = typeof retweets.$inferInsert;

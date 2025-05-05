@@ -6,6 +6,8 @@ import { insertTweet } from "@/app/action/tweet";
 import { getStringLength } from "@/utils/string-util";
 import { TWEET_TEXT_MAX_LENGTH } from "@/consts/tweet";
 
+import { ActionResponse } from "@/types/action";
+
 type Props = {
   replyTo?: {
     id: number;
@@ -14,7 +16,10 @@ type Props = {
 }
 
 export default function TweetForm({ replyTo }: Props) {
-  const [state, action, pending] = useActionState(insertTweet, undefined);
+  const [state, action, pending] = useActionState(async (prev: ActionResponse, formData: FormData) => {
+    formData.set("replyTo", replyTo ? replyTo.id.toString() : "");
+    return insertTweet(prev, formData);
+  }, undefined);
   const [content, setContent] = useState("");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [fileName, setFileName] = useState("");
@@ -72,11 +77,6 @@ export default function TweetForm({ replyTo }: Props) {
         </div>
       ) }
       <Form action={action} className="w-full">
-        <input
-          name="replyTo"
-          className="hidden"
-          defaultValue={replyTo?.id}
-        />
         <textarea
           name="textContent"
           value={content}
