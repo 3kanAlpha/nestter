@@ -14,7 +14,7 @@ export default function EmbedLinkCard({ embed }: Props) {
   return (
     <div className="w-full">
       <a href={embed.url} target="_blank" rel="noopener noreferrer">
-        <div className="card bg-base-100 dark:bg-tw-body card-border-base-200 w-full shadow-sm">
+        <div className="card bg-base-100 dark:bg-tw-body card-border-base-200 w-full card-sm shadow-sm">
           <figure>
             <Image
               className="object-cover w-full aspect-1200/630"
@@ -28,7 +28,7 @@ export default function EmbedLinkCard({ embed }: Props) {
           </figure>
           <div className="card-body">
             <h2 className="card-title">{ embed.title }</h2>
-            <p className="line-clamp-2 wrap-anywhere">{ embed.description }</p>
+            <p className="line-clamp-3 lg:line-clamp-2 wrap-anywhere">{ embed.description }</p>
           </div>
         </div>
       </a>
