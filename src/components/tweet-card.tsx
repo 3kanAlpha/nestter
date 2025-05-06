@@ -9,6 +9,7 @@ import TweetText from "./tweet/tweet-text";
 import ReplyButton from "./tweet/card/reply-button";
 import RetweetButton from "./tweet/card/retweet-button";
 import FavoriteButton from "./tweet/card/favorite-button";
+import ShareButton from "@/components/tweet/card/share-button";
 import { defaultAvatarUrl } from '@/consts/account';
 import { PREVENT_NAVIGATION_CLASS } from "@/consts/layout";
 import { User, Attachment } from "@/types/tweet";
@@ -125,11 +126,7 @@ export default function TweetCard({ tweet, user, attachments, isRetweet = false,
               {/* いいね */}
               <FavoriteButton tweetId={tweet.id} favCount={tweet.favoriteCount} isFaved={isFaved} auth={authUserId !== undefined} />
               {/* 共有 */}
-              <div>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185Z" />
-                </svg>
-              </div>
+              <ShareButton tweetId={tweet.id} />
               {/* その他ツイート操作 */}
               <div className={`dropdown dropdown-end ${PREVENT_NAVIGATION_CLASS}`}>
                 <div tabIndex={0} role="button">

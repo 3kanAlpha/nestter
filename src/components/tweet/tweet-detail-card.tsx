@@ -10,6 +10,7 @@ import EmbedReplyCard from "@/components/tweet/card/embed-reply-card";
 import ReplyButton from "@/components/tweet/card/reply-button";
 import RetweetButton from "@/components/tweet/card/retweet-button";
 import FavoriteButton from "@/components/tweet/card/favorite-button";
+import ShareButton from "@/components/tweet/card/share-button";
 import { defaultAvatarUrl } from '@/consts/account';
 import { deleteTweet } from "@/app/action/tweet";
 
@@ -98,13 +99,9 @@ export default function TweetDetailCard({ tweet, user, attachments, authUserId, 
             {/* いいね */}
             <FavoriteButton tweetId={tweet.id} favCount={tweet.favoriteCount} isFaved={isFaved} auth={authUserId !== undefined} />
             {/* 共有 */}
-            <div>
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185Z" />
-              </svg>
-            </div>
+            <ShareButton tweetId={tweet.id} />
             {/* その他ツイート操作 */}
-            <div className="dropdown dropdown-end">
+            <div className="dropdown dropdown-top dropdown-end">
               <div tabIndex={0} role="button">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />

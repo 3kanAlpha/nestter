@@ -60,7 +60,7 @@ export default function ReplyButton({ replyTo, replyCount, auth }: Props) {
         <p className="text-xs">{ replyCount > 0 && `${replyCount}`}</p>
       </button>
       <dialog id={dialogId} className="modal">
-        <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-box text-black dark:text-white" onClick={(e) => e.stopPropagation()}>
           <button
             className="btn btn-ghost btn-circle mb-2"
             onClick={handleClose}
