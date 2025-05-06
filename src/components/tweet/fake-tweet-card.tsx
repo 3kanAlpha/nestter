@@ -91,7 +91,7 @@ export default function FakeTweetCard({ tweet, user, authUserId, isFaved = false
               <div className="mt-2">
                 <SingleImage attachment={embedAttachemnt} />
               </div>
-              <div className="mt-1 pl-2">
+              <div className="pl-2">
                 <p className="text-gray-500 text-sm">Source: { embed.publisher }</p>
               </div>
             </div>

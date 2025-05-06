@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { searchFavedTweets } from "@/app/action/tweet";
 import TweetCard from "@/components/tweet-card";
+import FakeTweetCard from "./fake-tweet-card";
 
 import { JoinedTweet } from "@/types/tweet";
 
@@ -84,17 +85,30 @@ export default function LikedTweetList({ q, from, stream = false, authUserId, us
           user: tweet.replyUser,
           attachments: tweet.replyAttachment ? [tweet.replyAttachment] : null,
         }
-        return (
-          <TweetCard
-            key={tweet.tweet.id}
-            tweet={tweet.tweet}
-            user={tweet.user}
-            attachments={tweet.attachment ? [tweet.attachment] : null}
-            authUserId={authUserId}
-            isFaved={tweet.engagement?.isFaved}
-            reply={reply ?? undefined}
-          />
-        )
+        if (tweet.embed?.publisher === "Twitter") {
+          return (
+            <FakeTweetCard
+              key={tweet.tweet.id}
+              tweet={tweet.tweet}
+              user={tweet.user}
+              authUserId={authUserId}
+              isFaved={tweet.engagement?.isFaved}
+              embed={tweet.embed}
+            />
+          )
+        } else {
+          return (
+            <TweetCard
+              key={tweet.tweet.id}
+              tweet={tweet.tweet}
+              user={tweet.user}
+              attachments={tweet.attachment ? [tweet.attachment] : null}
+              authUserId={authUserId}
+              isFaved={tweet.engagement?.isFaved}
+              reply={reply ?? undefined}
+            />
+          )
+        }
       }) }
       {isLoading && <div className="text-center my-4"><span className="loading loading-spinner loading-md"></span></div>}
     </div>

@@ -286,6 +286,9 @@ export async function searchFavedTweets(targetUserId: number, minTweetTimestamp?
         width: tweetAttachments.imageWidth,
         height: tweetAttachments.imageHeight,
       },
+      embed: {
+        ...getTableColumns(embedLinks),
+      },
       engagement: {
         isFaved: sql<boolean>`${myFav.userId} IS NOT NULL`.as('isFaved'),
         favedTimestamp: favorites.createdAt,
@@ -317,6 +320,7 @@ export async function searchFavedTweets(targetUserId: number, minTweetTimestamp?
     .leftJoin(myFav, and(eq(tweets.id, myFav.tweetId), eq(myFav.userId, myUserId))) // 自分がいいねしているかどうか検証するため
     .leftJoin(retweets, and(eq(tweets.id, retweets.tweetId), eq(retweets.userId, myUserId)))
     .leftJoin(tweetAttachments, eq(tweets.id, tweetAttachments.tweetId))
+    .leftJoin(embedLinks, eq(tweets.embedId, embedLinks.id))
     .leftJoin(replyTweets, eq(tweets.replyTo, replyTweets.id))
     .leftJoin(replyUsers, eq(replyTweets.userId, replyUsers.id))
     .leftJoin(replyAttachments, eq(replyAttachments.tweetId, replyTweets.id))
