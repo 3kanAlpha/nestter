@@ -111,6 +111,7 @@ export default function TweetList({ q, from, to, replyTo, excludeReply, stream =
           tweet: tweet.retweetTweet,
           user: tweet.retweetUser,
           attachments: tweet.retweetAttachment ? [tweet.retweetAttachment] : null,
+          embed: tweet.retweetEmbed ?? null,
         }
         if (retweet) {
           return (

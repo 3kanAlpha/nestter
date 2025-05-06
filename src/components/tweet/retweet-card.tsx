@@ -6,18 +6,20 @@ import { formatDistanceToNow } from "date-fns";
 import SingleImage from "@/components/tweet/single-image";
 import UserAvatar from "@/components/header/user-avatar";
 import TweetText from "@/components/tweet/tweet-text";
+import EmbedLinkCard from "@/components/tweet/card/embed-link-card";
 import ReplyButton from "@/components/tweet/card/reply-button";
 import RetweetButton from "@/components/tweet/card/retweet-button";
 import FavoriteButton from "@/components/tweet/card/favorite-button";
 import { defaultAvatarUrl } from '@/consts/account';
 import { PREVENT_NAVIGATION_CLASS } from "@/consts/layout";
 import { User, Attachment } from "@/types/tweet";
-import type { SelectTweet } from "@/db/schema";
+import type { SelectTweet, SelectEmbedLinks } from "@/db/schema";
 
 type ReplyTweet = {
   tweet: SelectTweet;
   user: User;
   attachments: Attachment[] | null;
+  embed: SelectEmbedLinks | null;
 }
 
 type Props = {
@@ -85,6 +87,11 @@ export default function RetweetCard({ user, authUserId, isFaved = false, isRetwe
               { retweet.attachments && (
                 <div className="mt-2">
                   { retweet.attachments.length === 1 && <SingleImage attachment={retweet.attachments[0]} /> }
+                </div>
+              ) }
+              { retweet.embed && (
+                <div className="mt-2">
+                  <EmbedLinkCard embed={retweet.embed} />
                 </div>
               ) }
             </div>

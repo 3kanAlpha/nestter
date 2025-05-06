@@ -37,4 +37,5 @@ export type JoinedTweet = {
   retweetTweet?: SelectTweet | null;
   retweetUser?: User | null;
   retweetAttachment?: Attachment | null;
+  retweetEmbed?: SelectEmbedLinks | null;
 }

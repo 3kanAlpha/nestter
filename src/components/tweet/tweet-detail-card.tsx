@@ -7,6 +7,7 @@ import SingleImage from "@/components/tweet/single-image";
 import UserAvatar from "@/components/header/user-avatar";
 import TweetText from "@/components/tweet/tweet-text";
 import EmbedReplyCard from "@/components/tweet/card/embed-reply-card";
+import EmbedLinkCard from "@/components/tweet/card/embed-link-card";
 import ReplyButton from "@/components/tweet/card/reply-button";
 import RetweetButton from "@/components/tweet/card/retweet-button";
 import FavoriteButton from "@/components/tweet/card/favorite-button";
@@ -14,7 +15,7 @@ import ShareButton from "@/components/tweet/card/share-button";
 import { defaultAvatarUrl } from '@/consts/account';
 import { deleteTweet } from "@/app/action/tweet";
 
-import type { SelectTweet } from "@/db/schema";
+import type { SelectTweet, SelectEmbedLinks } from "@/db/schema";
 import { User, Attachment } from "@/types/tweet";
 
 type ReplyTweet = {
@@ -31,9 +32,10 @@ type Props = {
   isFaved?: boolean;
   isRetweeted?: boolean;
   reply?: ReplyTweet;
+  embed?: SelectEmbedLinks;
 }
 
-export default function TweetDetailCard({ tweet, user, attachments, authUserId, isFaved = false, isRetweeted = false, reply }: Props) {
+export default function TweetDetailCard({ tweet, user, attachments, authUserId, isFaved = false, isRetweeted = false, reply, embed }: Props) {
   const router = useRouter();
   const deleteDialogId = `tweet-detail-${tweet.id}-delete-confirm-dialog`;
 
@@ -74,6 +76,11 @@ export default function TweetDetailCard({ tweet, user, attachments, authUserId, 
             { attachments && (
               <div className="mt-2 w-[95%] mx-auto">
                 { attachments.length === 1 && <SingleImage attachment={attachments[0]} /> }
+              </div>
+            ) }
+            { embed && (
+              <div className="mt-2 w-full mx-auto">
+                <EmbedLinkCard embed={embed} />
               </div>
             ) }
           </div>

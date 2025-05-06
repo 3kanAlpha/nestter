@@ -71,6 +71,7 @@ export default async function PostDetail({ params }: Props) {
             isFaved={tweet.engagement?.isFaved}
             isRetweeted={tweet.engagement.isRetweeted}
             reply={reply ?? undefined}
+            embed={tweet.embed ?? undefined}
           />
         </Suspense>
         { tweet.tweet.replyCount > 0 && (

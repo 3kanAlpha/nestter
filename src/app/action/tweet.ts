@@ -35,6 +35,7 @@ const retweetUsers = alias(users, 'retweetUsers');
 const retweetAttachments = alias(tweetAttachments, 'retweetAttachments');
 const retweetLikes = alias(favorites, 'retweetLikes');
 const retweetRetweets = alias(retweets, 'retweetRetweets');
+const retweetEmbedLinks = alias(embedLinks, 'retweetEmbedLinks');
 const myFav = alias(favorites, 'myfav');
 
 /** 指定したIDのツイートが存在するかどうか検証する */
@@ -68,6 +69,9 @@ async function _getTweetById(tweetId: number) {
         width: tweetAttachments.imageWidth,
         height: tweetAttachments.imageHeight,
       },
+      embed: {
+        ...getTableColumns(embedLinks),
+      },
       engagement: {
         isFaved: sql<boolean>`${favorites.userId} IS NOT NULL`.as('isFaved'),
         favedTimestamp: favorites.createdAt,
@@ -98,6 +102,7 @@ async function _getTweetById(tweetId: number) {
     .leftJoin(favorites, and(eq(tweets.id, favorites.tweetId), eq(favorites.userId, sesUserId)))
     .leftJoin(retweets, and(eq(tweets.id, retweets.tweetId), eq(retweets.userId, sesUserId)))
     .leftJoin(tweetAttachments, eq(tweets.id, tweetAttachments.tweetId))
+    .leftJoin(embedLinks, eq(tweets.embedId, embedLinks.id))
     .leftJoin(replyTweets, eq(tweets.replyTo, replyTweets.id))
     .leftJoin(replyUsers, eq(replyTweets.userId, replyUsers.id))
     .leftJoin(replyAttachments, eq(replyAttachments.tweetId, replyTweets.id))
@@ -214,6 +219,9 @@ export async function searchTweetsB(minTweetId?: number, maxTweetId?: number, op
         width: retweetAttachments.imageWidth,
         height: retweetAttachments.imageHeight,
       },
+      retweetEmbed: {
+        ...getTableColumns(retweetEmbedLinks),
+      },
     })
     .from(tweets)
     .where(whereClause)
@@ -228,6 +236,7 @@ export async function searchTweetsB(minTweetId?: number, maxTweetId?: number, op
     .leftJoin(retweetTweets, eq(tweets.retweetParentId, retweetTweets.id))
     .leftJoin(retweetUsers, eq(retweetTweets.userId, retweetUsers.id))
     .leftJoin(retweetAttachments, eq(retweetAttachments.tweetId, retweetTweets.id))
+    .leftJoin(retweetEmbedLinks, eq(retweetTweets.embedId, retweetEmbedLinks.id))
     .leftJoin(retweetLikes, and(eq(tweets.retweetParentId, retweetLikes.tweetId), eq(retweetLikes.userId, sesUserId)))
     .leftJoin(retweetRetweets, and(eq(tweets.retweetParentId, retweetRetweets.tweetId), eq(retweetRetweets.userId, sesUserId)))
     .limit(20)

@@ -92,7 +92,9 @@ export default function FakeTweetCard({ tweet, user, authUserId, isFaved = false
                 <SingleImage attachment={embedAttachemnt} />
               </div>
               <div className="pl-2">
-                <p className="text-gray-500 text-sm">Source: { embed.publisher }</p>
+                <p className="text-gray-500 text-sm">
+                  Source: <a href={embed.url} target="_blank" rel="noopener noreferrer" className="hover:underline">{ embed.publisher }</a>
+                </p>
               </div>
             </div>
             <div className="flex flex-row justify-between w-[90%] text-gray-500">
