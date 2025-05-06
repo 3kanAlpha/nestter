@@ -133,6 +133,7 @@ export default function TweetList({ q, from, to, replyTo, excludeReply, stream =
               isFaved={tweet.engagement?.isFaved}
               isRetweeted={tweet.engagement?.isRetweeted}
               reply={reply ?? undefined}
+              embed={tweet.embed ?? undefined}
             />
           )
         }

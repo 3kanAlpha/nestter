@@ -10,11 +10,13 @@ import ReplyButton from "./tweet/card/reply-button";
 import RetweetButton from "./tweet/card/retweet-button";
 import FavoriteButton from "./tweet/card/favorite-button";
 import ShareButton from "@/components/tweet/card/share-button";
+import EmbedLinkCard from "@/components/tweet/card/embed-link-card";
+
 import { defaultAvatarUrl } from '@/consts/account';
 import { PREVENT_NAVIGATION_CLASS } from "@/consts/layout";
 import { User, Attachment } from "@/types/tweet";
 import { deleteTweet } from "@/app/action/tweet";
-import type { SelectTweet } from "@/db/schema";
+import type { SelectTweet, SelectEmbedLinks } from "@/db/schema";
 import EmbedReplyCard from "./tweet/card/embed-reply-card";
 
 type ReplyTweet = {
@@ -35,9 +37,10 @@ type Props = {
   isRetweeted?: boolean;
   reply?: ReplyTweet;
   retweet?: ReplyTweet;
+  embed?: SelectEmbedLinks;
 }
 
-export default function TweetCard({ tweet, user, attachments, isRetweet = false, authUserId, isFaved = false, isRetweeted = false, reply }: Props) {
+export default function TweetCard({ tweet, user, attachments, isRetweet = false, authUserId, isFaved = false, isRetweeted = false, reply, embed }: Props) {
   const pathname = usePathname();
   const router = useRouter();
   const dialogId = `tweet-card-${tweet.id}-delete-confirm-dialog`;
@@ -108,6 +111,11 @@ export default function TweetCard({ tweet, user, attachments, isRetweet = false,
               { attachments && (
                 <div className="mt-2">
                   { attachments.length === 1 && <SingleImage attachment={attachments[0]} /> }
+                </div>
+              ) }
+              { embed && (
+                <div className="mt-2">
+                  <EmbedLinkCard embed={embed} />
                 </div>
               ) }
             </div>

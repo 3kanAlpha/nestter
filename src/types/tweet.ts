@@ -1,4 +1,4 @@
-import type { SelectTweet } from "@/db/schema";
+import type { SelectTweet, SelectEmbedLinks } from "@/db/schema";
 
 export type User = {
   id: number;
@@ -29,6 +29,7 @@ export type JoinedTweet = {
   tweet: SelectTweet;
   user: User;
   attachment: Attachment | null;
+  embed: SelectEmbedLinks | null;
   engagement: Engagement | null;
   replyTweet: SelectTweet | null;
   replyUser: User | null;

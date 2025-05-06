@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { users, comps, tweets, tweetAttachments, favorites, retweets, follows } from "./schema";
+import { users, comps, tweets, tweetAttachments, embedLinks, favorites, retweets, follows } from "./schema";
 
 export const compsRelations = relations(comps, ({one}) => ({
 	user: one(users, {
@@ -34,8 +34,16 @@ export const tweetsRelations = relations(tweets, ({one, many}) => ({
 		fields: [tweets.userId],
 		references: [users.id]
 	}),
+	embedLink: one(embedLinks, {
+		fields: [tweets.embedId],
+		references: [embedLinks.id]
+	}),
 	favorites: many(favorites),
 	retweets: many(retweets),
+}));
+
+export const embedLinksRelations = relations(embedLinks, ({many}) => ({
+	tweets: many(tweets),
 }));
 
 export const favoritesRelations = relations(favorites, ({one}) => ({

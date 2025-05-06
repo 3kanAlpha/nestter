@@ -7,7 +7,7 @@ import { alias } from 'drizzle-orm/pg-core'
 
 import { auth } from "@/auth";
 import { db } from "@/db/client";
-import { tweets, users, tweetAttachments, favorites, InsertTweet, retweets } from "@/db/schema";
+import { tweets, users, tweetAttachments, favorites, InsertTweet, retweets, embedLinks } from "@/db/schema";
 import { getStringLength } from "@/utils/string-util";
 import { uploadTempImage } from './image';
 import { invokeUploadImage } from './lambda';
@@ -169,6 +169,9 @@ export async function searchTweetsB(minTweetId?: number, maxTweetId?: number, op
         width: tweetAttachments.imageWidth,
         height: tweetAttachments.imageHeight,
       },
+      embed: {
+        ...getTableColumns(embedLinks),
+      },
       engagement: {
         isFaved: sql<boolean>`${favorites.userId} IS NOT NULL`.as('isFaved'),
         favedTimestamp: favorites.createdAt,
@@ -218,6 +221,7 @@ export async function searchTweetsB(minTweetId?: number, maxTweetId?: number, op
     .leftJoin(favorites, and(eq(tweets.id, favorites.tweetId), eq(favorites.userId, sesUserId)))
     .leftJoin(retweets, and(eq(tweets.id, retweets.tweetId), eq(retweets.userId, sesUserId)))
     .leftJoin(tweetAttachments, eq(tweets.id, tweetAttachments.tweetId))
+    .leftJoin(embedLinks, eq(tweets.embedId, embedLinks.id))
     .leftJoin(replyTweets, eq(tweets.replyTo, replyTweets.id))
     .leftJoin(replyUsers, eq(replyTweets.userId, replyUsers.id))
     .leftJoin(replyAttachments, eq(replyAttachments.tweetId, replyTweets.id))

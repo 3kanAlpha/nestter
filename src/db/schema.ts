@@ -66,13 +66,33 @@ export const tweets = pgTable("tweets", {
 	replyCount: integer("reply_count").default(0).notNull(),
 	isPending: boolean("is_pending").default(false).notNull(),
 	retweetParentId: integer("retweet_parent_id"),
+	embedId: integer("embed_id"),
 }, (table) => [
 	foreignKey({
 			columns: [table.userId],
 			foreignColumns: [users.id],
 			name: "user_id_fkey"
 		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.embedId],
+			foreignColumns: [embedLinks.id],
+			name: "embed_id_fkey"
+		}).onDelete("cascade"),
 	check("text_max_length", sql`length(text_content) <= 400`),
+]);
+
+export const embedLinks = pgTable("embed_links", {
+	id: integer().primaryKey().generatedAlwaysAsIdentity({ name: "embed_links_id_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 2147483647, cache: 1 }),
+	title: text().notNull(),
+	description: text(),
+	publisher: text().notNull(),
+	url: text().notNull(),
+	imageUrl: text("image_url").notNull(),
+	imageWidth: integer("image_width").notNull(),
+	imageHeight: integer("image_height").notNull(),
+	twitterCreator: text("twitter_creator"),
+}, (table) => [
+	unique("embed_links_url_key").on(table.url),
 ]);
 
 export const sessions = pgTable("sessions", {
@@ -177,3 +197,5 @@ export type InsertAttachments = typeof tweetAttachments.$inferInsert;
 export type InsertFavorites = typeof favorites.$inferInsert;
 
 export type InsertRetweet = typeof retweets.$inferInsert;
+
+export type SelectEmbedLinks = typeof embedLinks.$inferSelect;
