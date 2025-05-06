@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { searchTweetsB } from "@/app/action/tweet";
 import TweetCard from "./tweet-card";
 import RetweetCard from "./tweet/retweet-card";
+import FakeTweetCard from "./tweet/fake-tweet-card";
 
 import { JoinedTweet } from "@/types/tweet";
 
@@ -123,19 +124,33 @@ export default function TweetList({ q, from, to, replyTo, excludeReply, stream =
             />
           )
         } else {
-          return (
-            <TweetCard
-              key={tweet.tweet.id}
-              tweet={tweet.tweet}
-              user={tweet.user}
-              attachments={tweet.attachment ? [tweet.attachment] : null}
-              authUserId={authUserId}
-              isFaved={tweet.engagement?.isFaved}
-              isRetweeted={tweet.engagement?.isRetweeted}
-              reply={reply ?? undefined}
-              embed={tweet.embed ?? undefined}
-            />
-          )
+          if (tweet.embed?.publisher === "Twitter") {
+            return (
+              <FakeTweetCard
+                key={tweet.tweet.id}
+                tweet={tweet.tweet}
+                user={tweet.user}
+                authUserId={authUserId}
+                isFaved={tweet.engagement?.isFaved}
+                isRetweeted={tweet.engagement?.isRetweeted}
+                embed={tweet.embed}
+              />
+            )
+          } else {
+            return (
+              <TweetCard
+                key={tweet.tweet.id}
+                tweet={tweet.tweet}
+                user={tweet.user}
+                attachments={tweet.attachment ? [tweet.attachment] : null}
+                authUserId={authUserId}
+                isFaved={tweet.engagement?.isFaved}
+                isRetweeted={tweet.engagement?.isRetweeted}
+                reply={reply ?? undefined}
+                embed={tweet.embed ?? undefined}
+              />
+            )
+          }
         }
       }) }
       {isLoading && <div className="text-center my-4"><span className="loading loading-spinner loading-md"></span></div>}
