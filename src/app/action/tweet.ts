@@ -8,9 +8,9 @@ import { alias } from 'drizzle-orm/pg-core'
 import { auth } from "@/auth";
 import { db } from "@/db/client";
 import { tweets, users, tweetAttachments, favorites, InsertTweet, retweets, embedLinks } from "@/db/schema";
-import { getStringLength } from "@/utils/string-util";
+import { getStringLength, extractFirstUrl } from "@/utils/string-util";
 import { uploadTempImage } from './image';
-import { invokeUploadImage } from './lambda';
+import { invokeUploadImage, invokeOgpUtil } from './lambda';
 import { TWEET_TEXT_MAX_LENGTH, TWEET_IMAGE_MAX_SIZE_MB } from '@/consts/tweet';
 
 import { ActionResponse } from '@/types/action';
@@ -443,6 +443,12 @@ export async function insertTweet(prev: ActionResponse, formData: FormData) {
   if (replyTo > 0) {
     // リプライならリプライ先のreplyCountをインクリメントする
     await db.update(tweets).set({ replyCount: sql`${tweets.replyCount} + 1` }).where(eq(tweets.id, replyTo));
+  }
+
+  // ツイートにURLが含まれるなら、SQSに投げる
+  const embedLink = extractFirstUrl(content);
+  if (embedLink) {
+    await invokeOgpUtil(row[0].newTweetId, embedLink);
   }
 
   redirect("/");

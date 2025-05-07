@@ -46,3 +46,11 @@ export function isValidHashtag(text: string): boolean {
   const japanesePattern = /^[\w\u30a0-\u30ff\u3040-\u309f\u3005-\u3006\u4e00-\u9fcf\u301c]+$/g;
   return japanesePattern.test(text);
 }
+
+/** 文字列に含まれるURLのうち、最初のものを返す */
+export function extractFirstUrl(text: string): string | null {
+  // 簡単なURL判定の正規表現
+  const urlRegex = /(https?:\/\/[^\s]+)/i;
+  const match = text.match(urlRegex);
+  return match ? match[0] : null;
+}

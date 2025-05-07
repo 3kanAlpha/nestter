@@ -53,3 +53,30 @@ export async function invokeUploadAvatar(fileKey: string, oldFileUrl: string) {
 
   return text;
 }
+
+export async function invokeOgpUtil(tweetId: number, targetUrl: string) {
+  const session = await auth();
+  if (!session || !session.user.screenName) {
+    return false;
+  }
+
+  const body = {
+    tweetId: tweetId,
+    targetUrl: targetUrl,
+  }
+
+  const params = new URLSearchParams({
+    Action: 'SendMessage',
+    MessageBody: JSON.stringify(body),
+  });
+
+  const url = `${process.env.SQS_OGP_UTIL_URL}?${params.toString()}`;
+
+  const response = await lambdaClient.fetch(url, {
+    method: "POST",
+  });
+
+  console.log("sqs status code:", response.status);
+
+  return response.ok;
+}
