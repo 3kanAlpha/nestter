@@ -71,7 +71,7 @@ export default function FakeTweetCard({ tweet, user, authUserId, isFaved = false
             <div className="avatar my-1">
               <div className="w-14 rounded">
                 <a href={`https://x.com/${embedScreenName}`} target="_blank" rel="noopener noreferrer">
-                  <UserAvatar src={defaultAvatarUrl} />
+                  <UserAvatar src={embed.logoUrl ?? defaultAvatarUrl} />
                 </a>
               </div>
             </div>

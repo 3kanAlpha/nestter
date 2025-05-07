@@ -91,6 +91,7 @@ export const embedLinks = pgTable("embed_links", {
 	imageWidth: integer("image_width").notNull(),
 	imageHeight: integer("image_height").notNull(),
 	twitterCreator: text("twitter_creator"),
+	logoUrl: text("logo_url"),
 }, (table) => [
 	unique("embed_links_url_key").on(table.url),
 ]);
