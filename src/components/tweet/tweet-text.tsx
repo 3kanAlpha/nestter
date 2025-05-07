@@ -9,7 +9,7 @@ type Props = {
 export default function TweetText({ textContent, noLink = false }: Props) {
   const parts = textContent.split(/(\s+)/).map((part, i) => {
     // URL検出
-    if (/^https?:\/\/[\w/:%#\$&\?\(\)~\.=\+\-]+$/.test(part)) {
+    if (/^https?:\/\/[\w/:%#\$&@\?\(\)~\.=\+\-]+$/.test(part)) {
       if (noLink) {
         return (
           <span key={i} className="text-blue-500 wrap-anywhere">
