@@ -10,14 +10,17 @@ import ReplyButton from "./tweet/card/reply-button";
 import RetweetButton from "./tweet/card/retweet-button";
 import FavoriteButton from "./tweet/card/favorite-button";
 import ShareButton from "@/components/tweet/card/share-button";
+import EmbedReplyCard from "./tweet/card/embed-reply-card";
 import EmbedLinkCard from "@/components/tweet/card/embed-link-card";
+import YouTubePlayer from "@/components/tweet/card/youtube-player";
 
 import { defaultAvatarUrl } from '@/consts/account';
 import { PREVENT_NAVIGATION_CLASS } from "@/consts/layout";
-import { User, Attachment } from "@/types/tweet";
 import { deleteTweet } from "@/app/action/tweet";
+import { extractFirstUrl } from "@/utils/string-util";
+
+import { User, Attachment } from "@/types/tweet";
 import type { SelectTweet, SelectEmbedLinks } from "@/db/schema";
-import EmbedReplyCard from "./tweet/card/embed-reply-card";
 
 type ReplyTweet = {
   tweet: SelectTweet;
@@ -118,6 +121,7 @@ export default function TweetCard({ tweet, user, attachments, isRetweet = false,
                   <EmbedLinkCard embed={embed} />
                 </div>
               ) }
+              <YouTubePlayer firstLink={extractFirstUrl(tweet.textContent)} />
             </div>
             <div className="flex flex-row justify-between w-[90%] text-gray-500">
               {/* リプライ */}

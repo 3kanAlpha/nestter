@@ -54,3 +54,16 @@ export function extractFirstUrl(text: string): string | null {
   const match = text.match(urlRegex);
   return match ? match[0] : null;
 }
+
+/** YouTube動画のリンクから動画のIDを取得する */
+export function extractVideoId(videoUrl: string): string | null {
+  if (videoUrl.startsWith("https://youtu.be")) {
+    const p = /^https:\/\/youtu\.be\/([\w-]+)/;
+    const match = videoUrl.match(p);
+    return match ? match[1] : null;
+  } else {
+    const p = /^https:\/\/www.youtube\.com\/watch\?v=([\w-]+)/;
+    const match = videoUrl.match(p);
+    return match ? match[1] : null;
+  }
+}
