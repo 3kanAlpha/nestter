@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Header from "@/components/header";
+import BottomNavigationWrapper from "@/components/nav/bottom-nav-wrapper";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -38,6 +39,9 @@ export default function RootLayout({
           <main>
             {children}
           </main>
+          <div className="w-screen lg:hidden">
+            <BottomNavigationWrapper />
+          </div>
         </div>
       </body>
     </html>

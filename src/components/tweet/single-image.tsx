@@ -48,7 +48,7 @@ export default function SingleImage({ attachment }: Props) {
           </div>
         ) }
         <Image
-          className={`rounded-lg object-cover h-full ${hideImage ? "blur-md brightness-50" : undefined}`}
+          className={`rounded-lg object-cover relative h-full ${hideImage ? "blur-md brightness-50" : undefined}`}
           src={attachment.fileUrl}
           alt="Image"
           loader={imageLoader}

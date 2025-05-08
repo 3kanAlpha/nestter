@@ -7,6 +7,7 @@ This is a Twitter clone built with Next.js, TypeScript, and Tailwind CSS.
 - [daisyUI](https://daisyui.com/)
 - [Drizzle ORM](https://orm.drizzle.team/)
 - [Neon](https://neon.tech)
+- AWS Lambda, SQS
 
 ## Running locally
 
