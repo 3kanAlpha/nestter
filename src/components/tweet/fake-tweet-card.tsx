@@ -12,7 +12,7 @@ import ShareButton from "@/components/tweet/card/share-button";
 
 import { defaultAvatarUrl } from '@/consts/account';
 import { PREVENT_NAVIGATION_CLASS } from "@/consts/layout";
-import { User, Attachment } from "@/types/tweet";
+import { User, Attachment, EmbedExtraParams } from "@/types/tweet";
 import { deleteTweet } from "@/app/action/tweet";
 import type { SelectTweet, SelectEmbedLinks } from "@/db/schema";
 
@@ -40,11 +40,12 @@ export default function FakeTweetCard({ tweet, user, authUserId, isFaved = false
 
   const embedScreenName = embed.twitterCreator!.slice(1);
   const embedDisplayName = embed.title.replace(` (${embed.twitterCreator})`, "");
+  const embedExtraParams: EmbedExtraParams = embed.extraParams ?? {};
   const embedAttachemnt = {
     id: 0,
     fileUrl: embed.imageUrl,
     mimeType: "image/webp",
-    isSpoiler: false,
+    isSpoiler: embedExtraParams.isSpoiler ?? false,
     width: embed.imageWidth,
     height: embed.imageHeight,
   }

@@ -39,3 +39,7 @@ export type JoinedTweet = {
   retweetAttachment?: Attachment | null;
   retweetEmbed?: SelectEmbedLinks | null;
 }
+
+export type EmbedExtraParams = {
+  isSpoiler?: boolean;
+}

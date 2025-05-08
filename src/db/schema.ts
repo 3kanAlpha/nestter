@@ -1,4 +1,4 @@
-import { pgTable, serial, integer, varchar, text, bigint, foreignKey, unique, check, timestamp, boolean, primaryKey } from "drizzle-orm/pg-core"
+import { pgTable, serial, integer, varchar, text, bigint, foreignKey, unique, check, timestamp, boolean, jsonb, primaryKey } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 
@@ -92,6 +92,7 @@ export const embedLinks = pgTable("embed_links", {
 	imageHeight: integer("image_height").notNull(),
 	twitterCreator: text("twitter_creator"),
 	logoUrl: text("logo_url"),
+	extraParams: jsonb("extra_params"),
 }, (table) => [
 	unique("embed_links_url_key").on(table.url),
 ]);
