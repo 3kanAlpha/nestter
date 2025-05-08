@@ -6,6 +6,7 @@
 @theme {
   --color-tw-header: #243447;
   --color-tw-body: #1b2836;
+  --color-tw-primary: #1da1f2;
 }
 
 @theme inline {

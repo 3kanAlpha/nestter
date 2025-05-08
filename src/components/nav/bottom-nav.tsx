@@ -21,18 +21,18 @@ function Dock({ choice, screenName }: {
   screenName: string;
 }) {
   return (
-    <div className="dock dock-sm z-20">
-      <Link href="/" className={choice === 0 ? "dock-active" : ""}>
+    <div className="dock dock-sm dark:bg-tw-header z-20">
+      <Link href="/" className={choice === 0 ? "dock-active dark:text-tw-primary" : ""}>
         <HomeSolid />
         <span className="dock-label">Home</span>
       </Link>
       
-      <button className={choice === 1 ? "dock-active" : ""} disabled>
+      <button className={choice === 1 ? "dock-active dark:text-tw-primary" : ""} disabled>
         <InboxSolid />
         <span className="dock-label">Inbox</span>
       </button>
       
-      <Link href={`/user/${screenName}`} className={choice === 2 ? "dock-active" : ""}>
+      <Link href={`/user/${screenName}`} className={choice === 2 ? "dock-active dark:text-tw-primary" : ""}>
         <UserSolid />
         <span className="dock-label">Profile</span>
       </Link>
