@@ -201,3 +201,5 @@ export type InsertFavorites = typeof favorites.$inferInsert;
 export type InsertRetweet = typeof retweets.$inferInsert;
 
 export type SelectEmbedLinks = typeof embedLinks.$inferSelect;
+
+export type InsertFollow = typeof follows.$inferInsert;

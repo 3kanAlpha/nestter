@@ -58,7 +58,7 @@ export async function setFavoriteState(tweetId: number, newState: boolean) {
 export async function getTweetLikedUsers(tweetId: number) {
   const res = await db
     .select({
-      userId: users.id,
+      id: users.id,
       screenName: users.screenName,
       displayName: users.displayName,
       avatarUrl: users.avatarUrl,

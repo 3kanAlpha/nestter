@@ -3,11 +3,11 @@
 import { cache } from 'react';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { eq } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 
 import { auth } from "@/auth";
 import { db } from "@/db/client";
-import { users } from "@/db/schema";
+import { users, follows } from "@/db/schema";
 import { uploadTempImage } from './image';
 import { getStringLength } from "@/utils/string-util";
 import { calcDigest } from '@/utils/hash-util';
@@ -93,6 +93,9 @@ export async function initializeAccount(prev: any, formData: FormData) {
 }
 
 async function _getUserByScreenName(screenName: string) {
+  const session = await auth();
+  const sesUserId = session?.user ? Number(session.user.id) : 0;
+
   const res = await db.select({
     id: users.id,
     createdAt: users.createdAt,
@@ -103,7 +106,14 @@ async function _getUserByScreenName(screenName: string) {
     website: users.website,
     location: users.location,
     accountLevel: users.accountLevel,
-  }).from(users).where(eq(users.screenName, screenName)).limit(1);
+    followingCount: db.$count(follows, eq(follows.followerId, users.id)),
+    followerCount: db.$count(follows, eq(follows.followeeId, users.id)),
+    isFollowed: sql<boolean>`${follows.followerId} IS NOT NULL`.as('isFollowed'),
+  })
+    .from(users)
+    .leftJoin(follows, and(eq(follows.followerId, sesUserId), eq(follows.followeeId, users.id)))
+    .where(eq(users.screenName, screenName))
+    .limit(1);
   return res.length > 0 ? res[0] : null;
 }
 

@@ -1,7 +1,5 @@
-import Link from "next/link";
 import { getTweetLikedUsers } from "@/app/action/favorite";
-import UserAvatar from "@/components/header/user-avatar";
-import { defaultAvatarUrl } from "@/consts/account";
+import UserCard from "@/components/user/user-card";
 
 type Props = {
   params: Promise<{ id: string }>
@@ -22,7 +20,7 @@ export default async function TweetReaction({ params }: Props) {
           <div className="tab-content bg-base-100">
             { likedUsers.length > 0 ? (
               <div className="join join-vertical w-full">
-                { likedUsers.map((e) => <UserCard key={e.userId} user={e} />) }
+                { likedUsers.map((e) => <UserCard key={e.id} user={e} />) }
               </div>
             ) : (
               <p className="p-2">まだ何もありません</p>
@@ -31,36 +29,5 @@ export default async function TweetReaction({ params }: Props) {
         </div>
       </div>
     </div>
-  )
-}
-
-type User = {
-  userId: number;
-  screenName: string | null;
-  displayName: string | null;
-  avatarUrl: string | null;
-  bio: string | null;
-}
-
-type CardProps = {
-  user: User;
-}
-
-function UserCard({ user }: CardProps) {
-  return (
-    <Link href={`/user/${user.screenName}`}>
-      <div className="join-item card card-border bg-base-100 dark:bg-tw-body flex flex-row gap-3 p-3">
-        <div className="avatar my-1">
-          <div className="size-12 rounded">
-            <UserAvatar src={user.avatarUrl ?? defaultAvatarUrl} />
-          </div>
-        </div>
-        <div className="flex flex-col">
-          <p className="truncate">{ user.displayName }</p>
-          <p className="text-gray-500 truncate">@{ user.screenName }</p>
-          <p>{ user.bio }</p>
-        </div>
-      </div>
-    </Link>
   )
 }

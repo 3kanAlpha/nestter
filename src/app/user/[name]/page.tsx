@@ -4,6 +4,7 @@ import { auth } from '@/auth';
 import { defaultAvatarUrl } from '@/consts/account';
 import { getUserByScreenName } from "@/app/action/account";
 import AccountBadge from '@/components/profile/account-badge';
+import FollowButton from '@/components/user/follow-button';
 import UserTabs from '@/components/user/UserTabs';
 import { formatJoinedDate } from "@/utils/date-util";
 import { removeProtocol } from '@/utils/string-util';
@@ -76,6 +77,9 @@ export default async function Profile({ params }: Props) {
                   編集
                 </Link>
               )}
+              { !isMe && sesUserId && (
+                <FollowButton followeeId={user.id} isFollowed={user.isFollowed} />
+              ) }
             </div>
           </div>
           <div className="mt-4 flex flex-row items-center gap-1">
@@ -118,6 +122,16 @@ export default async function Profile({ params }: Props) {
               <p className="text-sm">{ formatJoinedDate(user.createdAt) }</p>
             </div>
           </div>
+          <Link href={`/user/${user.screenName}/follow`}>
+            <div className="flex flex-row mt-2 gap-4 text-sm">
+              <p>
+                <span className="font-semibold">{ user.followingCount }</span><span className="text-gray-500 ml-2">フォロー</span>
+              </p>
+              <p>
+              <span className="font-semibold">{ user.followerCount }</span><span className="text-gray-500 ml-2">フォロワー</span>
+              </p>
+            </div>
+          </Link>
         </div>
         <div className="mt-8 mb-4">
           <UserTabs user={{ id: user.id, screenName: name }} authUserId={sesUserId} />
