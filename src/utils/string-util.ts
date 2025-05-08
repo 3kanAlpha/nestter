@@ -67,3 +67,12 @@ export function extractVideoId(videoUrl: string): string | null {
     return match ? match[1] : null;
   }
 }
+
+/** 文字列の長さを調整する */
+export function truncateString(text: string, maxLength: number): string {
+  if (text.length > maxLength) {
+    return text.slice(0, maxLength) + "…";
+  }
+
+  return text;
+}

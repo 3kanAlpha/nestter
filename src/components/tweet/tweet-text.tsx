@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { isValidHashtag, removeProtocol } from "@/utils/string-util";
+import { isValidHashtag, removeProtocol, truncateString } from "@/utils/string-util";
 
 type Props = {
   textContent: string;
@@ -10,16 +10,17 @@ export default function TweetText({ textContent, noLink = false }: Props) {
   const parts = textContent.split(/(\s+)/).map((part, i) => {
     // URL検出
     if (/^https?:\/\/[\w/:%#\$&@\?\(\)~\.=\+\-]+$/.test(part)) {
+      const urlText = truncateString(removeProtocol(part), 25);
       if (noLink) {
         return (
           <span key={i} className="text-blue-500 wrap-anywhere">
-            {removeProtocol(part)}
+            {urlText}
           </span>
         )
       } else {
         return (
           <a key={i} href={part} className="text-blue-500 hover:underline wrap-anywhere" target="_blank" rel="noopener noreferrer">
-            {removeProtocol(part)}
+            {urlText}
           </a>
         );
       }

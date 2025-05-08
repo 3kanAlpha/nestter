@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from 'next/navigation';
 import SingleImage from "@/components/tweet/single-image";
 import UserAvatar from "@/components/header/user-avatar";
-import TweetText from "@/components/tweet/tweet-text";
+import FakeTweetText from "@/components/tweet/card/fake-tweet-text";
 import ReplyButton from "@/components/tweet/card/reply-button";
 import RetweetButton from "@/components/tweet/card/retweet-button";
 import FavoriteButton from "@/components/tweet/card/favorite-button";
@@ -87,7 +87,7 @@ export default function FakeTweetCard({ tweet, user, authUserId, isFaved = false
             </div>
             <div className="mb-4 grow pr-2">
               <p className="whitespace-pre-wrap wrap-anywhere overflow-hidden text-clip">
-                <TweetText textContent={embed.description ?? ""} noLink />
+                <FakeTweetText textContent={embed.description ?? ""} />
               </p>
               <div className="mt-2">
                 <SingleImage attachment={embedAttachemnt} />
