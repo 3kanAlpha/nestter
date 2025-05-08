@@ -66,3 +66,17 @@ export async function getFollowers(userId: number) {
     .orderBy(desc(follows.createdAt));
   return res;
 }
+
+/** フォローしているアカウントが1個以上あるかどうか */
+export async function hasFollowingUser(userId: number | undefined) {
+  if (!userId) return false;
+
+  const res = await db.select({
+    id: users.id,
+  })
+    .from(follows)
+    .innerJoin(users, eq(follows.followeeId, users.id))
+    .where(eq(follows.followerId, userId))
+    .limit(1)
+  return res.length > 0;
+}

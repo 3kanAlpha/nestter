@@ -18,6 +18,7 @@ type Props = {
   replyTo?: number;
   /** リプライを除外するか */
   excludeReply?: boolean;
+  filterFollowing?: boolean;
   /** 新しいツイートを自動的に取得するか */
   stream?: boolean;
   /** ログインしているユーザーのID */
@@ -26,7 +27,7 @@ type Props = {
   searchFaved?: boolean;
 }
 
-export default function TweetList({ q, from, to, replyTo, excludeReply, stream = false, authUserId }: Props) {
+export default function TweetList({ q, from, to, replyTo, excludeReply, filterFollowing, stream = false, authUserId }: Props) {
   const [tweets, setTweets] = useState<JoinedTweet[]>([]);
   const [lastTweetId, setLastTweetId] = useState<number>(0);
   const [isLoading, setLoading] = useState(false);
@@ -42,6 +43,7 @@ export default function TweetList({ q, from, to, replyTo, excludeReply, stream =
       to: to,
       replyTo: replyTo,
       excludeReply: excludeReply,
+      filterFollowing: filterFollowing,
     });
     setTweets((prev) => [...prev, ...newTweets]);
     if (newTweets.length === 0) {
@@ -51,7 +53,7 @@ export default function TweetList({ q, from, to, replyTo, excludeReply, stream =
       setLastTweetId(lastTweet.tweet.id);
     }
     setLoading(false);
-  }, [isLoading, hasMore, lastTweetId, q, from, to, replyTo, excludeReply]);
+  }, [isLoading, hasMore, lastTweetId, q, from, to, replyTo, excludeReply, filterFollowing]);
 
   /** 新しいツイートを読み込む */
   const loadNewTweets = useCallback(async () => {
@@ -62,11 +64,12 @@ export default function TweetList({ q, from, to, replyTo, excludeReply, stream =
       to: to,
       replyTo: replyTo,
       excludeReply: excludeReply,
+      filterFollowing: filterFollowing,
     });
     if (newTweets.length > 0) {
       setTweets((prev) => [...newTweets, ...prev]);
     }
-  }, [tweets, q, from, to, replyTo, excludeReply]);
+  }, [tweets, q, from, to, replyTo, excludeReply, filterFollowing]);
 
   useEffect(() => {
     loadMoreTweets();

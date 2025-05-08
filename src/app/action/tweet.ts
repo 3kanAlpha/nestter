@@ -2,12 +2,12 @@
 
 import { cache } from 'react';
 import { redirect } from 'next/navigation';
-import { getTableColumns, eq, desc, lt, gt, lte, gte, ilike, and, sql, isNull } from "drizzle-orm";
+import { getTableColumns, eq, desc, lt, gt, lte, gte, ilike, and, or, sql, isNull, inArray } from "drizzle-orm";
 import { alias } from 'drizzle-orm/pg-core'
 
 import { auth } from "@/auth";
 import { db } from "@/db/client";
-import { tweets, users, tweetAttachments, favorites, InsertTweet, retweets, embedLinks } from "@/db/schema";
+import { tweets, users, tweetAttachments, favorites, InsertTweet, retweets, embedLinks, follows } from "@/db/schema";
 import { getStringLength, extractFirstUrl } from "@/utils/string-util";
 import { uploadTempImage } from './image';
 import { invokeUploadImage, invokeOgpUtil } from './lambda';
@@ -25,6 +25,8 @@ type SearchOptions = {
   /** リプライ先のツイートID */
   replyTo?: number;
   excludeReply?: boolean;
+  /** フォロー中のアカウントのみを対象とするか */
+  filterFollowing?: boolean;
 }
 
 const replyTweets = alias(tweets, 'replyTweets');
@@ -152,6 +154,18 @@ export async function searchTweetsB(minTweetId?: number, maxTweetId?: number, op
     searchCond.push(isNull(tweets.replyTo));
   }
   searchCond.push(eq(tweets.isPending, false));
+
+  if (options?.filterFollowing) {
+    searchCond.push(
+      or(
+        inArray(tweets.userId, db
+          .select({ followeeId: follows.followeeId })
+          .from(follows)
+          .where(eq(follows.followerId, sesUserId))),
+        eq(tweets.userId, sesUserId),
+      )
+    );
+  }
 
   const whereClause = and(...searchCond);
 
