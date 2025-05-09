@@ -56,7 +56,7 @@ export default async function CompDetail({ params }: Props) {
   const allCompTweets = await getCompTweets(comp.slug, comp.createdAt, comp.closeAt);
 
   return (
-    <div className="flex flex-col items-center pb-4 lg:pt-4">
+    <div className="flex flex-col items-center pb-4 pt-4">
       <div className="w-screen lg:w-lg">
         <div className="w-[90vw] lg:w-full mx-auto">
           <h2 className="mb-4">
@@ -69,16 +69,16 @@ export default async function CompDetail({ params }: Props) {
           <p className="text-gray-500 text-sm">on { comp.gameTitle }</p>
           <p className="text-sm mt-3">開催期間: <span className="font-semibold">{ format(new Date(comp.closeAt), "yyyy/MM/dd") } 00:00</span> まで</p>
         </div>
-        <div className="mt-6 mb-8">
+        <div className="w-[90vw] lg:w-full mx-auto mt-6 mb-8">
           <h3 className="mb-2">
             <span className="font-semibold">Ranking</span>
           </h3>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto text-sm lg:text-md">
             <table>
               <thead>
                 <tr className="bg-gray-200 dark:bg-gray-800">
                   <th className={`${tableCellStyle} text-left`}>順位</th>
-                  <th className={`${tableCellStyle} w-48 text-left`}>プレイヤー名</th>
+                  <th className={`${tableCellStyle} w-40 lg:w-60 text-left`}>プレイヤー名</th>
                   <th className={`${tableCellStyle} w-24 max-w-48 text-left`}>スコア</th>
                 </tr>
               </thead>
@@ -99,7 +99,7 @@ export default async function CompDetail({ params }: Props) {
           </div>
         </div>
         <div>
-          <h3 className="mb-2">
+          <h3 className="mb-2 pl-4 lg:pl-0">
             <span className="font-semibold">大会参加者のツイート</span>
           </h3>
           <div className="join join-vertical w-full">

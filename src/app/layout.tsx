@@ -36,7 +36,7 @@ export default function RootLayout({
       >
         <div className="font-[family-name:var(--font-geist-sans)]">
           <Header />
-          <main>
+          <main className="pb-12 lg:pb-0">
             {children}
           </main>
           <div className="w-screen lg:hidden">
