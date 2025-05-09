@@ -62,7 +62,7 @@ export default async function CompDetail({ params }: Props) {
           <h2 className="mb-4">
             <span className="text-2xl font-semibold">{ comp.name }</span>
           </h2>
-          <div className="flex flex-wrap gap-2 text-xl font-semibold">
+          <div className="flex flex-wrap gap-x-2 text-xl font-semibold">
             <p>{ comp.songTitle }</p>
             <p>[{ comp.difficulty }]</p>
           </div>
@@ -91,7 +91,11 @@ export default async function CompDetail({ params }: Props) {
                         <span>{ tweet.user.displayName }</span><span className="ml-2 text-sm text-gray-500">@{ tweet.user.screenName }</span>
                       </Link>
                     </td>
-                    <td className={`${tableCellStyle}`}>{ tweet.score }</td>
+                    <td className={`${tableCellStyle}`}>
+                      <Link href={`/post/${tweet.tweet.id}`}>
+                        { tweet.score }
+                      </Link>
+                    </td>
                   </tr>
                 )) }
               </tbody>

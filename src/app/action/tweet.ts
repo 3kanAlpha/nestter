@@ -501,6 +501,7 @@ export async function getCompTweets(slug: string, openAt: string, closeAt: strin
   const res = await db
     .selectDistinctOn([tweets.userId], {
       tweet: {
+        id: tweets.id,
         createdAt: tweets.createdAt,
         textContent: tweets.textContent,
       },
