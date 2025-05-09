@@ -203,3 +203,6 @@ export type InsertRetweet = typeof retweets.$inferInsert;
 export type SelectEmbedLinks = typeof embedLinks.$inferSelect;
 
 export type InsertFollow = typeof follows.$inferInsert;
+
+export type SelectComp = typeof comps.$inferSelect;
+export type InsertComp = typeof comps.$inferInsert;

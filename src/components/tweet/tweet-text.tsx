@@ -48,6 +48,19 @@ export default function TweetText({ textContent, noLink = false }: Props) {
           <span key={i} className="text-blue-500 wrap-anywhere">{part}</span>
         )
       } else {
+        // カジュアル大会のハッシュタグ
+        if (part.startsWith("#ir_")) {
+          const irSlug = part.slice(4);
+
+          return (
+            <Link key={i} href={{
+              pathname: `/ir/${irSlug}`,
+            }}>
+              <span className="text-blue-500 hover:underline wrap-anywhere">{part}</span>
+            </Link>
+          );
+        }
+
         return (
           <Link key={i} href={{
             pathname: "/search",

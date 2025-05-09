@@ -352,6 +352,174 @@ export async function searchFavedTweets(targetUserId: number, minTweetTimestamp?
   return res;
 }
 
+/** 大会に参加しているユーザーのツイート（最新20件）を取得する */
+export async function searchCompTweets(slug: string, openAt: string, closeAt: string, options?: SearchOptions) {
+  const session = await auth();
+  const rawUserId = Number(session?.user.id)
+  const sesUserId = Number.isFinite(rawUserId) ? rawUserId : 0;
+
+  const searchCond = [slug.length > 0 ? ilike(tweets.textContent, `%#ir_${slug}%`) : undefined];
+  // 開催期間中 [openAt, closeAt) に投稿されたツイートのみ
+  searchCond.push(and(gte(tweets.createdAt, openAt), lt(tweets.createdAt, closeAt)));
+  if (options?.q) {
+    const parts = options.q.split(' ').filter(p => p.trim() !== '') ?? [];
+    const textCond =
+      parts.length > 0
+        ? and(...parts.map(p => ilike(tweets.textContent, `%${p}%`)))
+        : undefined;
+    searchCond.push(textCond);
+  }
+  if (options?.from) {
+    searchCond.push(eq(users.screenName, options.from));
+  }
+  if (options?.to) {
+    searchCond.push(eq(replyUsers.screenName, options.to));
+  }
+  if (options?.replyTo) {
+    searchCond.push(eq(tweets.replyTo, options.replyTo));
+  }
+  if (options?.excludeReply) {
+    searchCond.push(isNull(tweets.replyTo));
+  }
+  searchCond.push(eq(tweets.isPending, false));
+
+  if (options?.filterFollowing) {
+    searchCond.push(
+      or(
+        inArray(tweets.userId, db
+          .select({ followeeId: follows.followeeId })
+          .from(follows)
+          .where(eq(follows.followerId, sesUserId))),
+        eq(tweets.userId, sesUserId),
+      )
+    );
+  }
+
+  const whereClause = and(...searchCond);
+
+  const res = await db
+    .selectDistinctOn([tweets.userId], {
+      tweet: {
+        ...getTableColumns(tweets),
+      },
+      user: {
+        id: users.id,
+        screenName: users.screenName,
+        displayName: users.displayName,
+        avatarUrl: users.avatarUrl,
+      },
+      attachment: {
+        id: tweetAttachments.id,
+        fileUrl: tweetAttachments.fileUrl,
+        mimeType: tweetAttachments.mimeType,
+        isSpoiler: tweetAttachments.isSpoiler,
+        width: tweetAttachments.imageWidth,
+        height: tweetAttachments.imageHeight,
+      },
+      embed: {
+        ...getTableColumns(embedLinks),
+      },
+      engagement: {
+        isFaved: sql<boolean>`${favorites.userId} IS NOT NULL`.as('isFaved'),
+        favedTimestamp: favorites.createdAt,
+        isRetweeted: sql<boolean>`${retweets.userId} IS NOT NULL`.as('isRetweeted'),
+        retweetedTimestamp: retweets.createdAt,
+        parentFaved: sql<boolean>`${retweetLikes.userId} IS NOT NULL`.as('parentFaved'),
+        parentRetweeted: sql<boolean>`${retweetRetweets.userId} IS NOT NULL`.as('parentRetweeted'),
+      },
+      replyTweet: {
+        ...getTableColumns(replyTweets),
+      },
+      replyUser: {
+        id: replyUsers.id,
+        screenName: replyUsers.screenName,
+        displayName: replyUsers.displayName,
+        avatarUrl: replyUsers.avatarUrl,
+      },
+      replyAttachment: {
+        id: replyAttachments.id,
+        fileUrl: replyAttachments.fileUrl,
+        mimeType: replyAttachments.mimeType,
+        isSpoiler: replyAttachments.isSpoiler,
+        width: replyAttachments.imageWidth,
+        height: replyAttachments.imageHeight,
+      },
+      retweetTweet: {
+        ...getTableColumns(retweetTweets),
+      },
+      retweetUser: {
+        id: retweetUsers.id,
+        screenName: retweetUsers.screenName,
+        displayName: retweetUsers.displayName,
+        avatarUrl: retweetUsers.avatarUrl,
+      },
+      retweetAttachment: {
+        id: retweetAttachments.id,
+        fileUrl: retweetAttachments.fileUrl,
+        mimeType: retweetAttachments.mimeType,
+        isSpoiler: retweetAttachments.isSpoiler,
+        width: retweetAttachments.imageWidth,
+        height: retweetAttachments.imageHeight,
+      },
+      retweetEmbed: {
+        ...getTableColumns(retweetEmbedLinks),
+      },
+    })
+    .from(tweets)
+    .where(whereClause)
+    .innerJoin(users, eq(tweets.userId, users.id))
+    .leftJoin(favorites, and(eq(tweets.id, favorites.tweetId), eq(favorites.userId, sesUserId)))
+    .leftJoin(retweets, and(eq(tweets.id, retweets.tweetId), eq(retweets.userId, sesUserId)))
+    .leftJoin(tweetAttachments, eq(tweets.id, tweetAttachments.tweetId))
+    .leftJoin(embedLinks, eq(tweets.embedId, embedLinks.id))
+    .leftJoin(replyTweets, eq(tweets.replyTo, replyTweets.id))
+    .leftJoin(replyUsers, eq(replyTweets.userId, replyUsers.id))
+    .leftJoin(replyAttachments, eq(replyAttachments.tweetId, replyTweets.id))
+    .leftJoin(retweetTweets, eq(tweets.retweetParentId, retweetTweets.id))
+    .leftJoin(retweetUsers, eq(retweetTweets.userId, retweetUsers.id))
+    .leftJoin(retweetAttachments, eq(retweetAttachments.tweetId, retweetTweets.id))
+    .leftJoin(retweetEmbedLinks, eq(retweetTweets.embedId, retweetEmbedLinks.id))
+    .leftJoin(retweetLikes, and(eq(tweets.retweetParentId, retweetLikes.tweetId), eq(retweetLikes.userId, sesUserId)))
+    .leftJoin(retweetRetweets, and(eq(tweets.retweetParentId, retweetRetweets.tweetId), eq(retweetRetweets.userId, sesUserId)))
+    .limit(20)
+    .orderBy(tweets.userId, desc(tweets.createdAt));
+  return res.sort((a, b) => {
+    return new Date(b.tweet.createdAt).getTime() - new Date(a.tweet.createdAt).getTime();
+  });
+}
+
+/** 大会に参加しているユーザーのツイートを全て取得する（ランキング計算用） */
+export async function getCompTweets(slug: string, openAt: string, closeAt: string) {
+  const searchCond = [slug.length > 0 ? ilike(tweets.textContent, `%#ir_${slug}%`) : undefined];
+  // 開催期間中 [openAt, closeAt) に投稿されたツイートのみ
+  searchCond.push(and(gte(tweets.createdAt, openAt), lt(tweets.createdAt, closeAt)));
+  searchCond.push(eq(tweets.isPending, false));
+  const whereClause = and(...searchCond);
+
+  const scoreRow = sql<number | null>`CAST(SUBSTRING(${tweets.textContent} FROM '(\\d+\\.\\d+|\\d+)') AS double precision)`.as('score');
+  const res = await db
+    .selectDistinctOn([tweets.userId], {
+      tweet: {
+        createdAt: tweets.createdAt,
+        textContent: tweets.textContent,
+      },
+      user: {
+        id: users.id,
+        screenName: users.screenName,
+        displayName: users.displayName,
+        avatarUrl: users.avatarUrl,
+      },
+      score: scoreRow,
+    })
+    .from(tweets)
+    .where(whereClause)
+    .innerJoin(users, eq(tweets.userId, users.id))
+    .orderBy(tweets.userId, desc(tweets.createdAt));
+  
+  const hasScore = res.filter((e) => e.score != null);
+  return hasScore.sort((a, b) => b.score! - a.score!);
+}
+
 async function updateIsPending(tweetId: number, newState: boolean) {
   await db.update(tweets).set({ isPending: newState }).where(eq(tweets.id, tweetId));
 }
