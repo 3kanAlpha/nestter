@@ -494,9 +494,10 @@ export async function getCompTweets(slug: string, openAt: string, closeAt: strin
   // 開催期間中 [openAt, closeAt) に投稿されたツイートのみ
   searchCond.push(and(gte(tweets.createdAt, openAt), lt(tweets.createdAt, closeAt)));
   searchCond.push(eq(tweets.isPending, false));
+  searchCond.push(sql`${tweets.textContent} ~ '^(\\d+\\.\\d+|\\d+)'`);
   const whereClause = and(...searchCond);
 
-  const scoreRow = sql<number | null>`CAST(SUBSTRING(${tweets.textContent} FROM '(\\d+\\.\\d+|\\d+)') AS double precision)`.as('score');
+  const scoreRow = sql<number>`CAST(SUBSTRING(${tweets.textContent} FROM '^(\\d+\\.\\d+|\\d+)') AS double precision)`.as('score');
   const res = await db
     .selectDistinctOn([tweets.userId], {
       tweet: {
@@ -516,8 +517,14 @@ export async function getCompTweets(slug: string, openAt: string, closeAt: strin
     .innerJoin(users, eq(tweets.userId, users.id))
     .orderBy(tweets.userId, desc(tweets.createdAt));
   
-  const hasScore = res.filter((e) => e.score != null);
-  return hasScore.sort((a, b) => b.score! - a.score!);
+  return res.sort((a, b) => {
+  // スコア降順
+  if (b.score !== a.score) {
+    return b.score - a.score;
+  }
+  // スコアが同じ場合は、作成日昇順
+  return new Date(a.tweet.createdAt).getTime() - new Date(b.tweet.createdAt).getTime();
+});
 }
 
 async function updateIsPending(tweetId: number, newState: boolean) {
