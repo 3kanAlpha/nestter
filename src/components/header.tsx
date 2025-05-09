@@ -8,7 +8,7 @@ export default async function Header() {
   const session = await auth();
 
   return (
-    <div className="w-screen bg-base-100 dark:bg-tw-header shadow-sm">
+    <div className="w-screen bg-base-100 dark:bg-gray-800 shadow-sm">
       <div className="navbar w-full lg:max-w-5xl mx-auto">
         <div className="flex-1">
           <Link href="/" className="btn btn-ghost text-xl">Nestter</Link>
@@ -48,7 +48,7 @@ function ProfileMenu({ screenName, avatarUrl }: ProfileMenuProps) {
     <div className="flex flex-row gap-2">
       <TweetButton />
       <div className="dropdown dropdown-end">
-        <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
+        <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar shadow-sm">
           <div className="w-10 rounded-full">
             <UserAvatar src={u} />
           </div>

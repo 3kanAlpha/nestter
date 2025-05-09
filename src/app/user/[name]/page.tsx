@@ -57,8 +57,8 @@ export default async function Profile({ params }: Props) {
       <div className="w-screen lg:w-lg">
         <div className="w-[90vw] lg:w-full mx-auto">
           <div className="flex flex-row justify-between items-end">
-            <div className="avatar">
-              <div className="w-24 rounded ring-gray-300 ring-offset-white ring ring-offset-2">
+            <div className="avatar shadow-md">
+              <div className="w-24 rounded ring-gray-300 ring">
                 {/* eslint-disable-next-line */}
                 <img
                   src={user.avatarUrl ?? defaultAvatarUrl}
