@@ -85,11 +85,11 @@ export default function FakeTweetCard({ tweet, user, authUserId, isFaved = false
                 </a>
               </p>
             </div>
-            <div className="mb-4 grow pr-2">
+            <div className="mb-4 grow pr-2 overflow-hidden">
               <p className="whitespace-pre-wrap wrap-anywhere overflow-hidden text-clip">
                 <FakeTweetText textContent={embed.description ?? ""} />
               </p>
-              <div className="max-w-[98%] mt-2">
+              <div className="max-w-[72vw] mt-2">
                 <SingleImage attachment={embedAttachemnt} />
               </div>
               <div className="pl-2">
