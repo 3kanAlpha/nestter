@@ -78,20 +78,23 @@ export default function FakeTweetCard({ tweet, user, authUserId, isFaved = false
             </div>
           </div>
           <div className="grow flex flex-col">
-            <div className="flex flex-row items-center flex-nowrap gap-3">
-              <p className="truncate w-[80%]">
-                <a href={`https://x.com/${embedScreenName}`} target="_blank" rel="noopener noreferrer">
-                  <span className="font-semibold">{ embedDisplayName }</span><span className="ml-2 text-gray-500 text-sm">@{ embedScreenName }</span>
-                </a>
-              </p>
+            <div className="w-full mb-3">
+              <a href={`https://x.com/${embedScreenName}`} target="_blank" rel="noopener noreferrer">
+                <div className="flex flex-col">
+                  <span className="font-semibold truncate">{ embedDisplayName }</span>
+                  <span className="text-gray-500 text-sm">@{ embedScreenName }</span>
+                </div>
+              </a>
             </div>
-            <div className="mb-4 grow pr-2 overflow-hidden">
+            <div className="mb-4 grow pr-2">
               <p className="whitespace-pre-wrap wrap-anywhere overflow-hidden text-clip">
                 <FakeTweetText textContent={embed.description ?? ""} />
               </p>
-              <div className="max-w-[72vw] mt-2">
-                <SingleImage attachment={embedAttachemnt} />
-              </div>
+              { embed.imageUrl.length > 0 && (
+                <div className="mt-2">
+                  <SingleImage attachment={embedAttachemnt} />
+                </div>
+              ) }
               <div className="pl-2">
                 <p className="text-gray-500 text-sm">
                   Source: <a href={embed.url} target="_blank" rel="noopener noreferrer" className="hover:underline">{ embed.publisher }</a>
