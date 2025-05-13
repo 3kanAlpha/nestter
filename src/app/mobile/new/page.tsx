@@ -6,6 +6,7 @@ import TweetForm from "@/components/tweet/tweet-form";
 export default async function NewTweet(props: {
   searchParams?: Promise<{
     replyTo?: string;
+    text?: string;
   }>;
 }) {
   const session = await auth();
@@ -15,6 +16,7 @@ export default async function NewTweet(props: {
 
   const searchParams = await props.searchParams;
   const id = Number(searchParams?.replyTo);
+  const text = searchParams?.text;
   // クエリパラメータを持っているかどうかで分岐
   if (Number.isFinite(id)) {
     const target = await getReplyTarget(id);
@@ -29,13 +31,13 @@ export default async function NewTweet(props: {
 
     return (
       <div className="flex flex-col items-center py-4">
-        <TweetForm replyTo={replyTo} />
+        <TweetForm replyTo={replyTo} defaultValue={text ?? ""} />
       </div>
     )
   } else {
     return (
       <div className="flex flex-col items-center py-4">
-        <TweetForm />
+        <TweetForm defaultValue={text ?? ""} />
       </div>
     )
   }

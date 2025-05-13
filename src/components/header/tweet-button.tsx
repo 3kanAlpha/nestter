@@ -1,11 +1,24 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import TweetForm from "@/components/tweet/tweet-form";
 
 export default function TweetButton() {
+  const pathname = usePathname();
   const [formKey, setFormKey] = useState(0);
   const handleShortcutKey = useCallback(handleClick, [formKey]);
+
+  const getFormDefaultValue = (path: string) => {
+    if (path.startsWith("/ir/")) {
+      const s = path.slice(4);
+      const sp = s.split("/");
+      const slug = sp[0];
+      return ` #ir_${slug}`;
+    }
+
+    return "";
+  }
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -45,7 +58,12 @@ export default function TweetButton() {
         </svg>
       </button>
       <Link
-        href="/mobile/new"
+        href={{
+          pathname: "/mobile/new",
+          query: {
+            text: getFormDefaultValue(pathname),
+          },
+        }}
         className="btn btn-circle bg-tw-primary text-white flex lg:hidden"
       >
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-[1.2em]">
@@ -62,7 +80,7 @@ export default function TweetButton() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
             </svg>
           </button>
-          <TweetForm key={formKey} />
+          <TweetForm key={formKey} defaultValue={getFormDefaultValue(pathname)} />
         </div>
       </dialog>
     </div>

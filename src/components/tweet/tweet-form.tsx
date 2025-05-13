@@ -13,14 +13,15 @@ type Props = {
     id: number;
     screenName: string;
   };
+  defaultValue?: string;
 }
 
-export default function TweetForm({ replyTo }: Props) {
+export default function TweetForm({ replyTo, defaultValue }: Props) {
   const [state, action, pending] = useActionState(async (prev: ActionResponse, formData: FormData) => {
     formData.set("replyTo", replyTo ? replyTo.id.toString() : "");
     return insertTweet(prev, formData);
   }, undefined);
-  const [content, setContent] = useState("");
+  const [content, setContent] = useState(defaultValue ?? "");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [fileName, setFileName] = useState("");
   const [hasImage, setHasImage] = useState(false);
