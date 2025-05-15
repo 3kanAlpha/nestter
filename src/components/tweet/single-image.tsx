@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { MouseEvent, useState } from "react";
 import Image, { ImageLoaderProps } from "next/image";
 
 type Attachment = {
@@ -24,7 +24,8 @@ export default function SingleImage({ attachment }: Props) {
     return src;
   }
 
-  function showImage() {
+  function showImage(e: MouseEvent) {
+    e.stopPropagation();
     if (hideImage) {
       setHideImage(false);
     }
