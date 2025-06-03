@@ -79,9 +79,14 @@ export default function FakeTweetCard({ tweet, user, authUserId, isFaved = false
           </div>
           <div className="grow flex flex-col">
             <div className="w-full mb-3">
-              <a href={`https://x.com/${embedScreenName}`} target="_blank" rel="noopener noreferrer">
-                <div className="flex flex-col">
-                  <span className="font-semibold truncate">{ embedDisplayName }</span>
+              <a
+                className="inline-block w-56"
+                href={`https://x.com/${embedScreenName}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <div className="w-56 flex flex-col">
+                  <span className="font-semibold truncate min-w-0">{ embedDisplayName }</span>
                   <span className="text-gray-500 text-sm">@{ embedScreenName }</span>
                 </div>
               </a>
